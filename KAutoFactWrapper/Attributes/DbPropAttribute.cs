@@ -14,7 +14,7 @@ namespace KAutoFactWrapper.Attributes
         public bool IsMandatory { get; private set; }
         public RelationType Relation { get; private set; }
 
-        public DbPropAttribute(string name, bool isPrimaryKey = false, RelationType relation = RelationType.none, bool isMandatory = false) : base(name)
+        public DbPropAttribute(string name = null, bool isPrimaryKey = false, RelationType relation = RelationType.none, bool isMandatory = false) : base(name)
         {
             this.IsPrimaryKey = isPrimaryKey;
             this.Relation = relation;
