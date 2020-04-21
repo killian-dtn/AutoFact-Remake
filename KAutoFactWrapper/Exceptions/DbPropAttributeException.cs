@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace KAutoFactWrapper.Exceptions
 {
-    class DbPropAttributeException : DbAttributeException
+    internal class DbPropAttributeException : DbAttributeException
     {
+        public DbPropAttributeException() : base() { }
+        public DbPropAttributeException(string message) : base(message) { }
+        public DbPropAttributeException(string message, Exception innerException) : base(message, innerException) { }
     }
 }
