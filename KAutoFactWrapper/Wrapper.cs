@@ -6,11 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 using KAutoFactWrapper.Attributes;
 using KAutoFactWrapper.Exceptions;
+using SqlKata;
+using SqlKata.Compilers;
+using SqlKata.Execution;
 
 namespace KAutoFactWrapper
 {
     public class Wrapper
     {
+        private DbConnection Connection;
+        private MySqlCompiler Compiler;
+
         public Dictionary<Type, string> TableByClass { get; private set; }
         public Dictionary<string, Type> ClassByTable { get; private set; }
         public Dictionary<string, Dictionary<string, PropertyInfo>> TableStructs { get; private set; }
@@ -28,6 +34,8 @@ namespace KAutoFactWrapper
 
         private Wrapper()
         {
+            this.Connection = DbConnection.Instance;
+            this.Compiler = new MySqlCompiler();
             this.TableByClass = new Dictionary<Type, string>();
             this.ClassByTable = new Dictionary<string, Type>();
             this.TableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
@@ -94,5 +102,25 @@ namespace KAutoFactWrapper
         }
 
         #endregion
+
+        public BaseQuery<Query> CreateSelectAllRequest<T>() where T : BaseEntity
+        {
+            throw new NotImplementedException();
+        }
+
+        public BaseQuery<Query> CreateSelectByPrimaryKeyRequest<T>(object PrimaryKey) where T : BaseEntity
+        {
+            throw new NotImplementedException();
+        }
+
+        public BaseQuery<Query> CreateUpdateRequest<T>(T Entity) where T : BaseEntity
+        {
+            throw new NotImplementedException();
+        }
+
+        public BaseQuery<Query> CreateDeleteRequest<T>(T Entity) where T : BaseEntity
+        {
+            throw new NotImplementedException();
+        }
     }
 }
