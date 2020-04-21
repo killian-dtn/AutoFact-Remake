@@ -76,5 +76,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KAutoFactWrapper\KAutoFactWrapper.csproj">
+      <Project>{4aa515e6-7f58-482d-b836-a52165217842}</Project>
+      <Name>KAutoFactWrapper</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
