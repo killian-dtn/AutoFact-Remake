@@ -46,6 +46,8 @@
     <Compile Include="Attributes\DbPropAttribute.cs" />
     <Compile Include="Attributes\RelationType.cs" />
     <Compile Include="Attributes\WrapperAttribute.cs" />
+    <Compile Include="BaseEntity.cs" />
+    <Compile Include="DbConnection.cs" />
     <Compile Include="Exceptions\DbAttributeException.cs" />
     <Compile Include="Exceptions\DbClassAttributeException.cs" />
     <Compile Include="Exceptions\DbPropAttributeException.cs" />
