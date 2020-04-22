@@ -55,6 +55,7 @@ namespace KAutoFactWrapper
                             continue;
 
                         bool HasPrimaryKey = false;
+                        List<PropertyInfo> PrimaryProps = null;
                         Dictionary<string, PropertyInfo> TableStructTmp = new Dictionary<string, PropertyInfo>();
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
@@ -65,7 +66,8 @@ namespace KAutoFactWrapper
                             if (string.IsNullOrEmpty(dpa.Name))
                                 continue;
 
-                            HasPrimaryKey |= dpa.IsPrimaryKey;
+                            if (HasPrimaryKey |= dpa.IsPrimaryKey)
+                                PrimaryProps.Add(prop);
 
                             try { TableStructTmp.Add(dpa.Name, prop); }
                             catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur Name de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.Name}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
@@ -73,6 +75,8 @@ namespace KAutoFactWrapper
 
                         if (!HasPrimaryKey)
                             throw new DbPropAttributeException($"Le type {t.FullName} n'a pas de clé primaire.");
+
+                        dca.PrimaryKey = new PrimaryKeyStruct(t, PrimaryProps.ToArray());
 
                         this.TableByClass.Add(t, dca.Name);
 
@@ -114,6 +118,17 @@ namespace KAutoFactWrapper
 
         public BaseQuery<Query> CreateSelectAllRequest<T>(QueryFactory qf) where T : BaseEntity
         {
+            DbClassAttribute dca = null;
+            if (!Wrapper.IsQueryAble(typeof(T), ref dca))
+                throw new DbClassAttributeException();
+
+            Query q = qf.Query(dca.Name)
+                .Select(this.GetFullNameProps<T>().ToArray());
+
+            //q = this.MakeJoins<T>(q);
+
+            //return q;
+
             throw new NotImplementedException();
         }
 
@@ -132,9 +147,35 @@ namespace KAutoFactWrapper
             throw new NotImplementedException();
         }
 
-        public BaseQuery<Query> GetClassJoins<T>(T Class, Query q) where T : BaseEntity
+        #region Query Building
+
+        private List<string> GetClassExtendsTree(Type t)
         {
-            throw new NotFiniteNumberException();
+            List<string> res = new List<string>();
+
+            DbClassAttribute dca = null;
+            if(!Wrapper.IsQueryAble(t, ref dca) || !t.IsSubclassOf(typeof(BaseEntity)))
+                throw new DbClassAttributeException();
+
+            if (string.IsNullOrEmpty(dca.DbExtends))
+                return new List<string>();
+
+            res.Add(dca.DbExtends);
+            try { return (List<string>)res.Concat(this.GetClassExtendsTree(this.ClassByTable[dca.DbExtends])); }
+            catch(ArgumentException e) { throw new DbClassAttributeException($"L'assembly ne contient aucune Type avec un attribut {dca.GetType().FullName} ayant Name à \"{dca.DbExtends}\"", e); }
         }
+
+        private IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity
+        {
+            foreach(string Table in this.GetClassExtendsTree(typeof(T)))
+            {
+                foreach (KeyValuePair<string, PropertyInfo> kvp in this.TableStructs[Table])
+                {
+                    yield return $"{Table}.{kvp.Key}";
+                }
+            }
+        }
+
+        #endregion
     }
 }
