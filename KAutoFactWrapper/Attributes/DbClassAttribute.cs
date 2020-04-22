@@ -10,10 +10,12 @@ namespace KAutoFactWrapper.Attributes
     public class DbClassAttribute : DbAttribute
     {
         public string DbExtends { get; private set; }
+        public PrimaryKeyStruct PrimaryKey { get; internal set; }
 
         public DbClassAttribute(string name, string dbExtends) : base(name)
         {
             this.DbExtends = dbExtends;
+            this.PrimaryKey = null;
         }
     }
 }
