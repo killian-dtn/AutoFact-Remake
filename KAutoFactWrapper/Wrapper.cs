@@ -103,22 +103,22 @@ namespace KAutoFactWrapper
 
         #endregion
 
-        public BaseQuery<Query> CreateSelectAllRequest<T>() where T : BaseEntity
+        public BaseQuery<Query> CreateSelectAllRequest<T>(QueryFactory qf) where T : BaseEntity
         {
             throw new NotImplementedException();
         }
 
-        public BaseQuery<Query> CreateSelectByPrimaryKeyRequest<T>(object PrimaryKey) where T : BaseEntity
+        public BaseQuery<Query> CreateSelectByPrimaryKeyRequest<T>(QueryFactory qf, PrimaryKeyStruct id) where T : BaseEntity
         {
             throw new NotImplementedException();
         }
 
-        public BaseQuery<Query> CreateUpdateRequest<T>(T Entity) where T : BaseEntity
+        public BaseQuery<Query> CreateUpdateRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity
         {
             throw new NotImplementedException();
         }
 
-        public BaseQuery<Query> CreateDeleteRequest<T>(T Entity) where T : BaseEntity
+        public BaseQuery<Query> CreateDeleteRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity
         {
             throw new NotImplementedException();
         }
