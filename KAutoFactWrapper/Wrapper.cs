@@ -54,11 +54,7 @@ namespace KAutoFactWrapper
                         if (!Wrapper.IsQueryAble(t, ref dca))
                             continue;
 
-                        this.TableByClass.Add(t, dca.Name);
-                        try { this.ClassByTable.Add(dca.Name, t); }
-                        catch(ArgumentNullException e) { throw new DbClassAttributeException($"La valeur Name de l'attribut {typeof(DbClassAttribute).FullName} sur le type {t.FullName} est nulle.", e); }
-                        catch(ArgumentException e) { throw new DbClassAttributeException($"La valeur Name de l'attribut {typeof(DbClassAttribute).FullName} \"{dca.Name}\" est utilisée sur plusieurs classes.", e); }
-
+                        bool HasPrimaryKey = false;
                         Dictionary<string, PropertyInfo> TableStructTmp = new Dictionary<string, PropertyInfo>();
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
@@ -69,11 +65,24 @@ namespace KAutoFactWrapper
                             if (string.IsNullOrEmpty(dpa.Name))
                                 continue;
 
+                            HasPrimaryKey |= dpa.IsPrimaryKey;
+
                             try { TableStructTmp.Add(dpa.Name, prop); }
                             catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur Name de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.Name}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
                         }
 
-                        this.TableStructs.Add(dca.Name, TableStructTmp);
+                        if (!HasPrimaryKey)
+                            throw new DbPropAttributeException($"Le type {t.FullName} n'a pas de clé primaire.");
+
+                        this.TableByClass.Add(t, dca.Name);
+
+                        try
+                        {
+                            this.ClassByTable.Add(dca.Name, t);
+                            this.TableStructs.Add(dca.Name, TableStructTmp);
+                        }
+                        catch (ArgumentNullException e) { throw new DbClassAttributeException($"La valeur Name de l'attribut {typeof(DbClassAttribute).FullName} sur le type {t.FullName} est nulle.", e); }
+                        catch (ArgumentException e) { throw new DbClassAttributeException($"La valeur Name de l'attribut {typeof(DbClassAttribute).FullName} \"{dca.Name}\" est utilisée sur plusieurs classes.", e); }
                     }
                 }
             }
@@ -121,6 +130,11 @@ namespace KAutoFactWrapper
         public BaseQuery<Query> CreateDeleteRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity
         {
             throw new NotImplementedException();
+        }
+
+        public BaseQuery<Query> GetClassJoins<T>(T Class, Query q) where T : BaseEntity
+        {
+            throw new NotFiniteNumberException();
         }
     }
 }
