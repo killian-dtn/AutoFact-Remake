@@ -29,7 +29,7 @@ namespace KAutoFactWrapper
             }
         }
 
-        private int Position;
+        public int Position { get; private set; }
 
         public PrimaryKeyEnumerator(PropertyInfo[] primaryKeyProps, string[] primaryKeyNames)
         {
