@@ -85,7 +85,6 @@
     <Compile Include="Exceptions\DbPropAttributeException.cs" />
     <Compile Include="KeyObjects\ForeignKeyEnumerator.cs" />
     <Compile Include="KeyObjects\ForeignKeyStruct.cs" />
-    <Compile Include="KeyObjects\ForeignKey.cs" />
     <Compile Include="KeyObjects\PrimaryKeyEnumerator.cs" />
     <Compile Include="KeyObjects\PrimaryKeyStruct.cs" />
     <Compile Include="Wrapper.cs" />
