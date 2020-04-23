@@ -20,6 +20,13 @@ namespace KAutoFactWrapper
                 catch(IndexOutOfRangeException) { throw new InvalidOperationException(); }
             }
         }
+        object IEnumerator.Current
+        {
+            get
+            {
+                return this.Current;
+            }
+        }
         public string CurrentFullName
         {
             get
@@ -48,12 +55,5 @@ namespace KAutoFactWrapper
             this.Position = -1;
         }
 
-        object IEnumerator.Current
-        {
-            get
-            {
-                return this.Current;
-            }
-        }
     }
 }
