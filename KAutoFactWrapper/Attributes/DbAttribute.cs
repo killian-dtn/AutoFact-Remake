@@ -8,11 +8,11 @@ namespace KAutoFactWrapper.Attributes
 {
     public abstract class DbAttribute : Attribute
     {
-        public string Name { get; private set; }
+        public string DbName { get; private set; }
 
-        public DbAttribute(string name)
+        public DbAttribute(string dbName)
         {
-            this.Name = name;
+            this.DbName = dbName;
         }
     }
 }

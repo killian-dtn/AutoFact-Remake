@@ -63,14 +63,14 @@ namespace KAutoFactWrapper
                             if (!Wrapper.IsQueryAble(prop, ref dpa))
                                 continue;
 
-                            if (string.IsNullOrEmpty(dpa.Name))
+                            if (string.IsNullOrEmpty(dpa.DbName))
                                 continue;
 
                             if (HasPrimaryKey |= dpa.IsPrimaryKey)
                                 PrimaryProps.Add(prop);
 
-                            try { TableStructTmp.Add(dpa.Name, prop); }
-                            catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur Name de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.Name}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
+                            try { TableStructTmp.Add(dpa.DbName, prop); }
+                            catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur DbName de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.DbName}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
                         }
 
                         if (!HasPrimaryKey)
@@ -78,15 +78,15 @@ namespace KAutoFactWrapper
 
                         dca.PrimaryKey = new PrimaryKeyStruct(t, PrimaryProps.ToArray());
 
-                        this.TableByClass.Add(t, dca.Name);
+                        this.TableByClass.Add(t, dca.DbName);
 
                         try
                         {
-                            this.ClassByTable.Add(dca.Name, t);
-                            this.TableStructs.Add(dca.Name, TableStructTmp);
+                            this.ClassByTable.Add(dca.DbName, t);
+                            this.TableStructs.Add(dca.DbName, TableStructTmp);
                         }
-                        catch (ArgumentNullException e) { throw new DbClassAttributeException($"La valeur Name de l'attribut {typeof(DbClassAttribute).FullName} sur le type {t.FullName} est nulle.", e); }
-                        catch (ArgumentException e) { throw new DbClassAttributeException($"La valeur Name de l'attribut {typeof(DbClassAttribute).FullName} \"{dca.Name}\" est utilisée sur plusieurs classes.", e); }
+                        catch (ArgumentNullException e) { throw new DbClassAttributeException($"La valeur DbName de l'attribut {typeof(DbClassAttribute).FullName} sur le type {t.FullName} est nulle.", e); }
+                        catch (ArgumentException e) { throw new DbClassAttributeException($"La valeur DbName de l'attribut {typeof(DbClassAttribute).FullName} \"{dca.DbName}\" est utilisée sur plusieurs classes.", e); }
                     }
                 }
             }
@@ -122,7 +122,7 @@ namespace KAutoFactWrapper
             if (!Wrapper.IsQueryAble(typeof(T), ref dca))
                 throw new DbClassAttributeException();
 
-            Query q = qf.Query(dca.Name)
+            Query q = qf.Query(dca.DbName)
                 .Select(this.GetFullNameProps<T>().ToArray());
 
             //q = this.MakeJoins<T>(q);
@@ -162,7 +162,7 @@ namespace KAutoFactWrapper
 
             res.Add(dca.DbExtends);
             try { return (List<string>)res.Concat(this.GetClassExtendsTree(this.ClassByTable[dca.DbExtends])); }
-            catch(ArgumentException e) { throw new DbClassAttributeException($"L'assembly ne contient aucune Type avec un attribut {dca.GetType().FullName} ayant Name à \"{dca.DbExtends}\"", e); }
+            catch(ArgumentException e) { throw new DbClassAttributeException($"L'assembly ne contient aucune Type avec un attribut {dca.GetType().FullName} ayant DbName à \"{dca.DbExtends}\"", e); }
         }
 
         private IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity
