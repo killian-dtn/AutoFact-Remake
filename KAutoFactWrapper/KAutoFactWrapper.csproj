@@ -83,8 +83,8 @@
     <Compile Include="Exceptions\DbAttributeException.cs" />
     <Compile Include="Exceptions\DbClassAttributeException.cs" />
     <Compile Include="Exceptions\DbPropAttributeException.cs" />
-    <Compile Include="PrimaryKey\PrimaryKeyEnumerator.cs" />
-    <Compile Include="PrimaryKey\PrimaryKeyStruct.cs" />
+    <Compile Include="KeyObjects\PrimaryKeyEnumerator.cs" />
+    <Compile Include="KeyObjects\PrimaryKeyStruct.cs" />
     <Compile Include="Wrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
