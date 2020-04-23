@@ -9,7 +9,7 @@ using KAutoFactWrapper.Exceptions;
 
 namespace KAutoFactWrapper
 {
-    class ForeignKeyStruct : IEnumerable
+    public class ForeignKeyStruct : IEnumerable
     {
         public Dictionary<PropertyInfo, PropertyInfo> ForeignKeys { get; private set; }
         public PropertyInfo this[PropertyInfo Item]

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KAutoFactWrapper
 {
-    class ForeignKeyEnumerator : IEnumerator
+    public class ForeignKeyEnumerator : IEnumerator
     {
         public Dictionary<PropertyInfo, PropertyInfo> ForeignKeys { get; private set; }
         public KeyValuePair<PropertyInfo, PropertyInfo> Current
