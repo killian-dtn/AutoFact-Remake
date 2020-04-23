@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using KAutoFactWrapper.Attributes;
+using KAutoFactWrapper.Exceptions;
 
 namespace KAutoFactWrapper
 {
@@ -12,6 +14,23 @@ namespace KAutoFactWrapper
     {
         public PropertyInfo[] PrimaryKeyProps { get; private set; }
         public Type AssociatedType { get; private set; }
+        public string[] PrimaryKeyFullNames
+        {
+            get
+            {
+                List<string> res = new List<string>();
+                foreach (PropertyInfo prop in this.PrimaryKeyProps)
+                {
+                    try { res.Add($"{PrimaryKeyStruct.w.TableByClass[prop.ReflectedType]}.{prop.GetCustomAttribute<DbPropAttribute>().DbName}"); }
+                    catch (ArgumentException e) { throw new DbClassAttributeException(e.Message, e); }
+                    catch (NullReferenceException e) { throw new DbPropAttributeException($"La propriété {prop.ReflectedType.FullName}.{prop.Name} ne respecte pas les paramètres nécessaire au Wrapper.", e); }
+                }
+
+                return res.ToArray();
+            }
+        }
+
+        private static Wrapper w = Wrapper.Instance;
 
         public PrimaryKeyStruct(Type associatedType, params PropertyInfo[] primaryKeyProps)
         {
@@ -26,7 +45,7 @@ namespace KAutoFactWrapper
 
         public PrimaryKeyEnumerator GetEnumerator()
         {
-            return new PrimaryKeyEnumerator(this.PrimaryKeyProps);
+            return new PrimaryKeyEnumerator(this.PrimaryKeyProps, this.PrimaryKeyFullNames);
         }
     }
 }

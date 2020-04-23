@@ -11,6 +11,7 @@ namespace KAutoFactWrapper
     public class PrimaryKeyEnumerator : IEnumerator
     {
         public PropertyInfo[] PrimaryKeyProps { get; private set; }
+        public string[] PrimaryKeyFullNames { get; private set; }
         public PropertyInfo Current
         {
             get
@@ -19,10 +20,18 @@ namespace KAutoFactWrapper
                 catch(IndexOutOfRangeException) { throw new InvalidOperationException(); }
             }
         }
+        public string CurrentFullName
+        {
+            get
+            {
+                try { return this.PrimaryKeyFullNames[this.Position]; }
+                catch (IndexOutOfRangeException) { throw new InvalidOperationException(); }
+            }
+        }
 
         private int Position;
 
-        public PrimaryKeyEnumerator(PropertyInfo[] primaryKeyProps)
+        public PrimaryKeyEnumerator(PropertyInfo[] primaryKeyProps, string[] primaryKeyNames)
         {
             this.PrimaryKeyProps = primaryKeyProps;
             this.Position = -1;
