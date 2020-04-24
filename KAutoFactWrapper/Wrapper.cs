@@ -10,7 +10,6 @@ using KAutoFactWrapper.Exceptions;
 using SqlKata;
 using SqlKata.Compilers;
 using SqlKata.Execution;
-using Ubiety.Dns.Core.Records;
 
 namespace KAutoFactWrapper
 {
