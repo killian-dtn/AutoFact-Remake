@@ -12,9 +12,11 @@ namespace KAutoFactWrapper.Attributes
         public string ReferenceDbName { get; private set; }
         public string ReferenceTable { get; private set; }
         public RelationType Relation { get; private set; }
+        public bool IsInheritanceKey { get; private set; }
         string IForeignKeyPropAttribute.ReferenceDbName { get { return this.ReferenceDbName; } set { this.ReferenceDbName = value; } }
         string IForeignKeyPropAttribute.ReferenceTable { get { return this.ReferenceTable; } set { this.ReferenceTable = value; } }
         RelationType IForeignKeyPropAttribute.Relation { get { return this.Relation; } set { this.Relation = value; } }
+        bool IForeignKeyPropAttribute.IsInheritanceKey { get { return this.IsInheritanceKey; } set { this.IsInheritanceKey = value; } }
 
         private DbPrimaryForeignKeyPropAttribute(string dbName, string referenceDbName, string referenceTable, RelationType relation) : base(dbName)
         {

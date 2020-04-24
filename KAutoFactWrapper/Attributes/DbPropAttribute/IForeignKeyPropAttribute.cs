@@ -11,5 +11,6 @@ namespace KAutoFactWrapper.Attributes
         string ReferenceDbName { get; set; }
         string ReferenceTable { get; set; }
         RelationType Relation { get; set; }
+        bool IsInheritanceKey { get; set; }
     }
 }
