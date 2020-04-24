@@ -196,7 +196,7 @@ namespace KAutoFactWrapper
         /// </summary>
         /// <param name="t">Type à analyser.</param>
         /// <returns>Liste contenant les noms en base de données des parents du Type.</returns>
-        private List<string> GetClassExtendsTree(Type t)
+        public List<string> GetClassExtendsTree(Type t)
         {
             List<string> res = new List<string>();
 
@@ -217,7 +217,7 @@ namespace KAutoFactWrapper
         /// </summary>
         /// <typeparam name="T">Type à analyser.</typeparam>
         /// <returns>Liste des noms complet au format base de données suivant : TABLE.PROPRIETE.</returns>
-        private IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity
+        public IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity
         {
             foreach(string Table in this.GetClassExtendsTree(typeof(T)))
             {
@@ -234,7 +234,7 @@ namespace KAutoFactWrapper
         /// <typeparam name="T">Type utilisé dans la requête.</typeparam>
         /// <param name="query">Objet Query où ajouter les jointures.</param>
         /// <returns>Objet Query avec les jointures ajoutées.</returns>
-        private Query MakeInheritanceJoins<T>(Query query) where T : BaseEntity
+        public Query MakeInheritanceJoins<T>(Query query) where T : BaseEntity
         {
             DbClassAttribute child_dca = null;
             if (!Wrapper.IsQueryAble(typeof(T), ref child_dca))
