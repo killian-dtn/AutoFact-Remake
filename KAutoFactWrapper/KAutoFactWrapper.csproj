@@ -75,7 +75,12 @@
   <ItemGroup>
     <Compile Include="Attributes\DbAttribute.cs" />
     <Compile Include="Attributes\DbClassAttribute.cs" />
-    <Compile Include="Attributes\DbPropAttribute.cs" />
+    <Compile Include="Attributes\DbPropAttribute\DbPrimaryForeignKeyPropAttribute.cs" />
+    <Compile Include="Attributes\DbPropAttribute\DbForeignKeyPropAttribute.cs" />
+    <Compile Include="Attributes\DbPropAttribute\DbPrimaryKeyPropAttribute.cs" />
+    <Compile Include="Attributes\DbPropAttribute\DbPropAttribute.cs" />
+    <Compile Include="Attributes\DbPropAttribute\IForeignKeyPropAttribute.cs" />
+    <Compile Include="Attributes\DbPropAttribute\IPrimaryKeyPropAttribute.cs" />
     <Compile Include="Attributes\RelationType.cs" />
     <Compile Include="Attributes\WrapperAttribute.cs" />
     <Compile Include="BaseEntity.cs" />
