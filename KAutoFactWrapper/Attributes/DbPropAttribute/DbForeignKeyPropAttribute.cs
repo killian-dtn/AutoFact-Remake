@@ -18,13 +18,14 @@ namespace KAutoFactWrapper.Attributes
         RelationType IForeignKeyPropAttribute.Relation { get { return this.Relation; } set { this.Relation = value; } }
         bool IForeignKeyPropAttribute.IsInheritanceKey { get { return this.IsInheritanceKey; } set { this.IsInheritanceKey = value; } }
 
-        private DbForeignKeyPropAttribute(string dbName, string referenceDbName, string referenceTable, RelationType relation) : base(dbName)
+        private DbForeignKeyPropAttribute(string dbName, string referenceDbName, string referenceTable, RelationType relation, bool isInheritanceKey = false) : base(dbName)
         {
             this.ReferenceDbName = referenceDbName;
             this.ReferenceTable = referenceTable;
             this.Relation = relation;
+            this.IsInheritanceKey = isInheritanceKey;
         }
 
-        public DbForeignKeyPropAttribute(string dbName, string referenceDbName, string referenceTable) : this(dbName, referenceDbName, referenceTable, RelationType.none) { }
+        public DbForeignKeyPropAttribute(string dbName, string referenceDbName, string referenceTable, bool isInheritanceKey = false) : this(dbName, referenceDbName, referenceTable, RelationType.none, isInheritanceKey) { }
     }
 }
