@@ -14,8 +14,8 @@ namespace KAutoFactWrapper
 {
     public class Wrapper
     {
-        private DbConnection Connection;
-        private MySqlCompiler Compiler;
+        /*private DbConnection Connection;
+        private MySqlCompiler Compiler;*/
 
         /// <summary>
         /// Noms des tables (selon les attributs donnés aux Types) classés par Type leur type assigné.
@@ -43,8 +43,8 @@ namespace KAutoFactWrapper
 
         private Wrapper()
         {
-            this.Connection = DbConnection.Instance;
-            this.Compiler = new MySqlCompiler();
+            /*this.Connection = DbConnection.Instance;
+            this.Compiler = new MySqlCompiler();*/
             this.TableByClass = new Dictionary<Type, string>();
             this.ClassByTable = new Dictionary<string, Type>();
             this.TableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
@@ -70,7 +70,9 @@ namespace KAutoFactWrapper
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
                             DbPropAttribute dpa = null;
-                            if (!Wrapper.IsQueryAble(prop, ref dpa) || string.IsNullOrEmpty(dpa.DbName))
+                            if (!Wrapper.IsQueryAble(prop, ref dpa))
+                                continue;
+                            if (string.IsNullOrEmpty(dpa.DbName))
                                 continue;
 
                             if (dpa is IPrimaryKeyPropAttribute)
@@ -141,18 +143,28 @@ namespace KAutoFactWrapper
             return Wrapper.IsQueryAble(prop, ref dpa);
         }
 
-        private static bool IsQueryAble(PropertyInfo prop, ref DbPropAttribute propAttribute)
+        private static bool IsQueryAble(PropertyInfo prop, ref DbPropAttribute dpa)
         {
             int nbAttributes = 0;
-            DbPropAttribute dpa = null;
-            if ((dpa = prop.GetCustomAttribute<DbPropAttribute>()) != null)
+            DbPropAttribute temp_dpa;
+            if ((temp_dpa = prop.GetCustomAttribute<DbPrimaryKeyPropAttribute>()) != null)
+            {
+                dpa = temp_dpa;
                 nbAttributes++;
-            if ((dpa = prop.GetCustomAttribute<DbPrimaryKeyPropAttribute>()) != null)
+            }
+            if ((temp_dpa = prop.GetCustomAttribute<DbForeignKeyPropAttribute>()) != null)
+            {
+                dpa = temp_dpa;
                 nbAttributes++;
-            if ((dpa = prop.GetCustomAttribute<DbForeignKeyPropAttribute>()) != null)
+            }
+            if ((temp_dpa = prop.GetCustomAttribute<DbPrimaryForeignKeyPropAttribute>()) != null)
+            {
+                dpa = temp_dpa;
                 nbAttributes++;
-            if ((dpa = prop.GetCustomAttribute<DbPrimaryForeignKeyPropAttribute>()) != null)
-                nbAttributes++;
+            }
+            if (dpa == null)
+                if ((dpa = prop.GetCustomAttribute<DbPropAttribute>()) != null)
+                    nbAttributes++;
 
             if (nbAttributes > 1)
                 throw new DbPropAttributeException($"La propriété {prop.ReflectedType.FullName}.{prop.Name} doit avoir un seul attribut de type {typeof(DbPropAttribute).FullName}.");
