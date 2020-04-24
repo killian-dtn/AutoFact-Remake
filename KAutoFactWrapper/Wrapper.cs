@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using KAutoFactWrapper.Attributes;
@@ -9,6 +10,7 @@ using KAutoFactWrapper.Exceptions;
 using SqlKata;
 using SqlKata.Compilers;
 using SqlKata.Execution;
+using Ubiety.Dns.Core.Records;
 
 namespace KAutoFactWrapper
 {
@@ -55,19 +57,23 @@ namespace KAutoFactWrapper
                             continue;
 
                         bool HasPrimaryKey = false;
-                        List<PropertyInfo> PrimaryProps = null;
+                        List<PropertyInfo> PrimaryProps = new List<PropertyInfo>();
+                        List<PropertyInfo> ForeignProps = new List<PropertyInfo>();
                         Dictionary<string, PropertyInfo> TableStructTmp = new Dictionary<string, PropertyInfo>();
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
                             DbPropAttribute dpa = null;
-                            if (!Wrapper.IsQueryAble(prop, ref dpa))
+                            if (!Wrapper.IsQueryAble(prop, ref dpa) || string.IsNullOrEmpty(dpa.DbName))
                                 continue;
 
-                            if (string.IsNullOrEmpty(dpa.DbName))
-                                continue;
-
-                            if (HasPrimaryKey |= dpa.IsPrimaryKey)
+                            if (dpa is IPrimaryKeyPropAttribute)
+                            {
                                 PrimaryProps.Add(prop);
+                                HasPrimaryKey |= true;
+                            }
+
+                            if (dpa is IForeignKeyPropAttribute)
+                                ForeignProps.Add(prop);
 
                             try { TableStructTmp.Add(dpa.DbName, prop); }
                             catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur DbName de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.DbName}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
@@ -106,12 +112,27 @@ namespace KAutoFactWrapper
 
         private static bool IsQueryAble(PropertyInfo prop)
         {
-            return prop.GetCustomAttribute<DbPropAttribute>() != null;
+            DbPropAttribute dpa = null;
+            return Wrapper.IsQueryAble(prop, ref dpa);
         }
 
         private static bool IsQueryAble(PropertyInfo prop, ref DbPropAttribute propAttribute)
         {
-            return (propAttribute = prop.GetCustomAttribute<DbPropAttribute>()) != null;
+            int nbAttributes = 0;
+            DbPropAttribute dpa = null;
+            if ((dpa = prop.GetCustomAttribute<DbPropAttribute>()) != null)
+                nbAttributes++;
+            if ((dpa = prop.GetCustomAttribute<DbPrimaryKeyPropAttribute>()) != null)
+                nbAttributes++;
+            if ((dpa = prop.GetCustomAttribute<DbForeignKeyPropAttribute>()) != null)
+                nbAttributes++;
+            if ((dpa = prop.GetCustomAttribute<DbPrimaryForeignKeyPropAttribute>()) != null)
+                nbAttributes++;
+
+            if (nbAttributes > 1)
+                throw new DbPropAttributeException($"La propriété {prop.ReflectedType.FullName}.{prop.Name} doit avoir un seul attribut de type {typeof(DbPropAttribute).FullName}.");
+
+            return dpa != null && nbAttributes == 1;
         }
 
         #endregion
