@@ -17,11 +17,20 @@ namespace KAutoFactWrapper
         private DbConnection Connection;
         private MySqlCompiler Compiler;
 
+        /// <summary>
+        /// Noms des tables (selon les attributs donnés aux Types) classés par Type leur type assigné.
+        /// </summary>
         public Dictionary<Type, string> TableByClass { get; private set; }
+        /// <summary>
+        /// Types classés par nom des tables donnés dans leur attribut.
+        /// </summary>
         public Dictionary<string, Type> ClassByTable { get; private set; }
         public Dictionary<string, Dictionary<string, PropertyInfo>> TableStructs { get; private set; }
 
         private static Wrapper instance = null;
+        /// <summary>
+        /// Instance du singleton.
+        /// </summary>
         public static Wrapper Instance
         {
             get
@@ -182,6 +191,11 @@ namespace KAutoFactWrapper
 
         #region Query Building
 
+        /// <summary>
+        /// Obtient l'arbre d'héritage en base de données du Type donné.
+        /// </summary>
+        /// <param name="t">Type à analyser.</param>
+        /// <returns>Liste contenant les noms en base de données des parents du Type.</returns>
         private List<string> GetClassExtendsTree(Type t)
         {
             List<string> res = new List<string>();
@@ -198,6 +212,11 @@ namespace KAutoFactWrapper
             catch(ArgumentException e) { throw new DbClassAttributeException($"L'assembly ne contient aucune Type avec un attribut {dca.GetType().FullName} ayant DbName à \"{dca.DbExtends}\"", e); }
         }
 
+        /// <summary>
+        /// Donne le nom complet de toutes les propriétés en base de données.
+        /// </summary>
+        /// <typeparam name="T">Type à analyser.</typeparam>
+        /// <returns>Liste des noms complet au format base de données suivant : TABLE.PROPRIETE.</returns>
         private IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity
         {
             foreach(string Table in this.GetClassExtendsTree(typeof(T)))
@@ -209,6 +228,12 @@ namespace KAutoFactWrapper
             }
         }
 
+        /// <summary>
+        /// Ajoute les jointures à une requête, correspondant à l'arbre d'héritage du Type donné.
+        /// </summary>
+        /// <typeparam name="T">Type utilisé dans la requête.</typeparam>
+        /// <param name="query">Objet Query où ajouter les jointures.</param>
+        /// <returns>Objet Query avec les jointures ajoutées.</returns>
         private Query MakeInheritanceJoins<T>(Query query) where T : BaseEntity
         {
             DbClassAttribute child_dca = null;
