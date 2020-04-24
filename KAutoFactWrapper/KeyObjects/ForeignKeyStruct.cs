@@ -12,6 +12,7 @@ namespace KAutoFactWrapper
     public class ForeignKeyStruct : IEnumerable
     {
         public Dictionary<PropertyInfo, PropertyInfo> ForeignKeys { get; private set; }
+        public Type AssociatedType { get; private set; }
         public PropertyInfo this[PropertyInfo Item]
         {
             get
