@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace KAutoFactWrapper.Attributes
 {
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class DbPrimaryKeyPropAttribute : DbPropAttribute, IPrimaryKeyPropAttribute
     {
         public DbPrimaryKeyPropAttribute(string dbName) : base(dbName) { }

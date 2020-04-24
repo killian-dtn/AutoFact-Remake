@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace KAutoFactWrapper.Attributes
 {
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     class DbPrimaryForeignKeyPropAttribute : DbPropAttribute, IPrimaryKeyPropAttribute, IForeignKeyPropAttribute
     {
         public string ReferenceDbName { get; private set; }
