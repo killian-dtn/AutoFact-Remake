@@ -162,10 +162,6 @@ namespace KAutoFactWrapper
             Query q = qf.Query(dca.DbName)
                 .Select(this.GetFullNameProps<T>().ToArray());
 
-            //q = this.MakeJoins<T>(q);
-
-            //return q;
-
             throw new NotImplementedException();
         }
 
@@ -211,6 +207,51 @@ namespace KAutoFactWrapper
                     yield return $"{Table}.{kvp.Key}";
                 }
             }
+        }
+
+        private Query MakeInheritanceJoins<T>(Query query) where T : BaseEntity
+        {
+            DbClassAttribute child_dca = null;
+            if (!Wrapper.IsQueryAble(typeof(T), ref child_dca))
+                throw new DbClassAttributeException();
+
+            // On parcourt toutes les tables parents
+            foreach (string Table in this.GetClassExtendsTree(typeof(T)))
+            {
+                DbClassAttribute parent_dca = null;
+                if (!Wrapper.IsQueryAble(this.ClassByTable[Table], ref parent_dca))
+                    throw new DbClassAttributeException();
+
+                // On ajoute la jointure pour chaque parent
+                query = query.Join(Table, j =>
+                {
+                    int ReferenceKeyCount = 0;
+                    // On parcourt les différentes clés primaires de la table enfant pour trouver celles associées à la table parent
+                    foreach(KeyValuePair<PropertyInfo, PropertyInfo> ChildForeignKey in child_dca.ForeignKeys)
+                    {
+                        IForeignKeyPropAttribute dpa = null;
+                        if ((dpa = ChildForeignKey.Key.GetCustomAttribute<DbForeignKeyPropAttribute>()) == null)
+                            if ((dpa = ChildForeignKey.Key.GetCustomAttribute<DbPrimaryForeignKeyPropAttribute>()) == null)
+                                throw new DbPropAttributeException();
+
+                        // On fait la jointure si la clé primaire du parent est trouvée
+                        if (dpa.IsInheritanceKey && dpa.ReferenceTable == Table)
+                        {
+                            j = j.On($"{child_dca.DbName}.{((DbPropAttribute)dpa).DbName}", $"{dpa.ReferenceTable}.{dpa.ReferenceDbName}");
+                            ReferenceKeyCount++;
+                        }
+                    }
+
+                    if (ReferenceKeyCount < 1)
+                        throw new DbClassAttributeException($"Le Type {this.ClassByTable[child_dca.DbName].FullName} est marqué comme étant un enfant de la table {Table} mais ne contient aucune clé étrangère associée.");
+
+                    return j;
+                });
+
+                child_dca = parent_dca;
+            }
+
+            return query;
         }
 
         #endregion
