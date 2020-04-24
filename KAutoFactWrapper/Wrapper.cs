@@ -40,6 +40,7 @@ namespace KAutoFactWrapper
             this.ClassByTable = new Dictionary<string, Type>();
             this.TableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
             this.Load();
+            this.LoadForeignKeys();
         }
 
         private void Load()
@@ -56,7 +57,6 @@ namespace KAutoFactWrapper
 
                         bool HasPrimaryKey = false;
                         List<PropertyInfo> PrimaryProps = new List<PropertyInfo>();
-                        List<PropertyInfo> ForeignProps = new List<PropertyInfo>();
                         Dictionary<string, PropertyInfo> TableStructTmp = new Dictionary<string, PropertyInfo>();
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
@@ -70,8 +70,8 @@ namespace KAutoFactWrapper
                                 HasPrimaryKey |= true;
                             }
 
-                            if (dpa is IForeignKeyPropAttribute)
-                                ForeignProps.Add(prop);
+                            if ((dpa is IForeignKeyPropAttribute || dpa is IPrimaryKeyPropAttribute) && string.IsNullOrEmpty(dpa.DbName))
+                                throw new DbPropAttributeException();
 
                             try { TableStructTmp.Add(dpa.DbName, prop); }
                             catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur DbName de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.DbName}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
@@ -93,6 +93,24 @@ namespace KAutoFactWrapper
                         catch (ArgumentException e) { throw new DbClassAttributeException($"La valeur DbName de l'attribut {typeof(DbClassAttribute).FullName} \"{dca.DbName}\" est utilisée sur plusieurs classes.", e); }
                     }
                 }
+            }
+        }
+
+        private void LoadForeignKeys()
+        {
+            foreach(KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in this.TableStructs)
+            {
+                Dictionary<PropertyInfo, PropertyInfo> ForeignProps = new Dictionary<PropertyInfo, PropertyInfo>();
+                foreach (KeyValuePair<string, PropertyInfo> Column in Table.Value)
+                {
+                    DbPropAttribute dpa = null;
+                    if (!Wrapper.IsQueryAble(Column.Value, ref dpa) || string.IsNullOrEmpty(dpa.DbName))
+                        throw new DbAttributeException();
+
+                    if (dpa is IForeignKeyPropAttribute)
+                        ForeignProps.Add(Column.Value, this.TableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
+                }
+                this.ClassByTable[Table.Key].GetCustomAttribute<DbClassAttribute>().ForeignKeys = new ForeignKeyStruct(ForeignProps);
             }
         }
 
