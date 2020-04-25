@@ -63,5 +63,14 @@ namespace KAutoFactWrapper
 
             return true;
         }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 670499336;
+            hashCode = hashCode * -1521134295 + EqualityComparer<PropertyInfo[]>.Default.GetHashCode(PrimaryKeyProps);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Type>.Default.GetHashCode(AssociatedType);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string[]>.Default.GetHashCode(PrimaryKeyFullNames);
+            return hashCode;
+        }
     }
 }

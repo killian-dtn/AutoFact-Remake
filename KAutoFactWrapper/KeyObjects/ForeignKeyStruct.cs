@@ -61,5 +61,13 @@ namespace KAutoFactWrapper
 
             return true;
         }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -273016290;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<PropertyInfo, PropertyInfo>>.Default.GetHashCode(ForeignKeys);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Type>.Default.GetHashCode(AssociatedType);
+            return hashCode;
+        }
     }
 }
