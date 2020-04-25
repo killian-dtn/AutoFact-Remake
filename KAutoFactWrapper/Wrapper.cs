@@ -174,7 +174,7 @@ namespace KAutoFactWrapper
 
         #endregion
 
-        public BaseQuery<Query> CreateSelectAllRequest<T>(QueryFactory qf) where T : BaseEntity
+        public Query CreateSelectAllRequest<T>(QueryFactory qf) where T : BaseEntity<T>
         {
             DbClassAttribute dca = null;
             if (!Wrapper.IsQueryAble(typeof(T), ref dca))
@@ -186,17 +186,22 @@ namespace KAutoFactWrapper
             throw new NotImplementedException();
         }
 
-        public BaseQuery<Query> CreateSelectByPrimaryKeyRequest<T>(QueryFactory qf, PrimaryKeyStruct id) where T : BaseEntity
+        public Query CreateSelectByPrimaryKeyRequest<T>(QueryFactory qf, Dictionary<string, object> PrimaryKeys) where T : BaseEntity<T>
         {
             throw new NotImplementedException();
         }
 
-        public BaseQuery<Query> CreateUpdateRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity
+        public Query CreateInsertRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity<T>
         {
             throw new NotImplementedException();
         }
 
-        public BaseQuery<Query> CreateDeleteRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity
+        public Query CreateUpdateRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity<T>
+        {
+            throw new NotImplementedException();
+        }
+
+        public Query CreateDeleteRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity<T>
         {
             throw new NotImplementedException();
         }
@@ -213,7 +218,7 @@ namespace KAutoFactWrapper
             List<string> res = new List<string>();
 
             DbClassAttribute dca = null;
-            if(!Wrapper.IsQueryAble(t, ref dca) || !t.IsSubclassOf(typeof(BaseEntity)))
+            if(!Wrapper.IsQueryAble(t, ref dca) || !t.IsSubclassOf(typeof(BaseEntity<>)))
                 throw new DbClassAttributeException();
 
             if (string.IsNullOrEmpty(dca.DbExtends))
@@ -229,7 +234,7 @@ namespace KAutoFactWrapper
         /// </summary>
         /// <typeparam name="T">Type à analyser.</typeparam>
         /// <returns>Liste des noms complet au format base de données suivant : TABLE.PROPRIETE.</returns>
-        public IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity
+        public IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity<T>
         {
             foreach(string Table in this.GetClassExtendsTree(typeof(T)))
             {
@@ -246,7 +251,7 @@ namespace KAutoFactWrapper
         /// <typeparam name="T">Type utilisé dans la requête.</typeparam>
         /// <param name="query">Objet Query où ajouter les jointures.</param>
         /// <returns>Objet Query avec les jointures ajoutées.</returns>
-        public Query MakeInheritanceJoins<T>(Query query) where T : BaseEntity
+        public Query MakeInheritanceJoins<T>(Query query) where T : BaseEntity<T>
         {
             DbClassAttribute child_dca = null;
             if (!Wrapper.IsQueryAble(typeof(T), ref child_dca))
