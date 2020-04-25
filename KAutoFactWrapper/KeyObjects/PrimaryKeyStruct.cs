@@ -47,5 +47,21 @@ namespace KAutoFactWrapper
         {
             return new PrimaryKeyEnumerator(this.PrimaryKeyProps, this.PrimaryKeyFullNames);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is PrimaryKeyStruct))
+                return false;
+            if (((PrimaryKeyStruct)obj).PrimaryKeyProps.Length != this.PrimaryKeyProps.Length)
+                return false;
+            if (!((PrimaryKeyStruct)obj).AssociatedType.Equals(this.AssociatedType))
+                return false;
+
+            foreach (PropertyInfo p in (PrimaryKeyStruct)obj)
+                if (!this.PrimaryKeyProps.Contains<PropertyInfo>(p))
+                    return false;
+
+            return true;
+        }
     }
 }

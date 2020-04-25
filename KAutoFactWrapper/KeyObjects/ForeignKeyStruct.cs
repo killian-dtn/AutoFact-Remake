@@ -40,5 +40,25 @@ namespace KAutoFactWrapper
         }
 
         #endregion
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ForeignKeyStruct))
+                return false;
+            if (((ForeignKeyStruct)obj).ForeignKeys.Count != this.ForeignKeys.Count)
+                return false;
+            if (!((ForeignKeyStruct)obj).AssociatedType.Equals(this.AssociatedType))
+                return false;
+
+            try
+            {
+                foreach (KeyValuePair<PropertyInfo, PropertyInfo> fk in (ForeignKeyStruct)obj)
+                    if (!this.ForeignKeys[fk.Key].Equals(fk.Value))
+                        return false;
+            }
+            catch (IndexOutOfRangeException) { return false; }
+
+            return true;
+        }
     }
 }
