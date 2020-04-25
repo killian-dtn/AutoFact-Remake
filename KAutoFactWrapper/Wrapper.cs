@@ -14,9 +14,6 @@ namespace KAutoFactWrapper
 {
     public class Wrapper
     {
-        /*private DbConnection Connection;
-        private MySqlCompiler Compiler;*/
-
         /// <summary>
         /// Noms des tables (selon les attributs donnés aux Types) classés par Type leur type assigné.
         /// </summary>
@@ -43,8 +40,6 @@ namespace KAutoFactWrapper
 
         private Wrapper()
         {
-            /*this.Connection = DbConnection.Instance;
-            this.Compiler = new MySqlCompiler();*/
             this.TableByClass = new Dictionary<Type, string>();
             this.ClassByTable = new Dictionary<string, Type>();
             this.TableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
@@ -121,7 +116,7 @@ namespace KAutoFactWrapper
                     if (dpa is IForeignKeyPropAttribute)
                         ForeignProps.Add(Column.Value, this.TableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
                 }
-                this.ClassByTable[Table.Key].GetCustomAttribute<DbClassAttribute>().ForeignKeys = new ForeignKeyStruct(ForeignProps);
+                this.ClassByTable[Table.Key].GetCustomAttribute<DbClassAttribute>().ForeignKeys = new ForeignKeyStruct(this.ClassByTable[Table.Key], ForeignProps);
             }
         }
 

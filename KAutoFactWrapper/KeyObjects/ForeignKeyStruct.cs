@@ -22,8 +22,9 @@ namespace KAutoFactWrapper
             }
         }
 
-        public ForeignKeyStruct(Dictionary<PropertyInfo, PropertyInfo> foreignKeys)
+        public ForeignKeyStruct(Type associatedType, Dictionary<PropertyInfo, PropertyInfo> foreignKeys)
         {
+            this.AssociatedType = associatedType;
             this.ForeignKeys = foreignKeys;
         }
 
