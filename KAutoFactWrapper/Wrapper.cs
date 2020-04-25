@@ -14,8 +14,11 @@ namespace KAutoFactWrapper
 {
     public class Wrapper
     {
-        /*private DbConnection Connection;
-        private MySqlCompiler Compiler;*/
+        private static readonly Wrapper instance = new Wrapper();
+        /// <summary>
+        /// Instance du singleton.
+        /// </summary>
+        public static Wrapper Instance { get { return Wrapper.instance; } }
 
         /// <summary>
         /// Noms des tables (selon les attributs donnés aux Types) classés par Type leur type assigné.
@@ -27,24 +30,9 @@ namespace KAutoFactWrapper
         public Dictionary<string, Type> ClassByTable { get; private set; }
         public Dictionary<string, Dictionary<string, PropertyInfo>> TableStructs { get; private set; }
 
-        private static Wrapper instance = null;
-        /// <summary>
-        /// Instance du singleton.
-        /// </summary>
-        public static Wrapper Instance
-        {
-            get
-            {
-                if (Wrapper.instance == null)
-                    Wrapper.instance = new Wrapper();
-                return Wrapper.instance;
-            }
-        }
-
+        static Wrapper() { }
         private Wrapper()
         {
-            /*this.Connection = DbConnection.Instance;
-            this.Compiler = new MySqlCompiler();*/
             this.TableByClass = new Dictionary<Type, string>();
             this.ClassByTable = new Dictionary<string, Type>();
             this.TableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
@@ -65,24 +53,28 @@ namespace KAutoFactWrapper
                             continue;
 
                         bool HasPrimaryKey = false;
-                        List<PropertyInfo> PrimaryProps = new List<PropertyInfo>();
+                        dca.PrimaryKey = new PrimaryKeyStruct(t);
                         Dictionary<string, PropertyInfo> TableStructTmp = new Dictionary<string, PropertyInfo>();
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
                             DbPropAttribute dpa = null;
                             if (!Wrapper.IsQueryAble(prop, ref dpa))
                                 continue;
-                            if (string.IsNullOrEmpty(dpa.DbName))
-                                continue;
-
-                            if (dpa is IPrimaryKeyPropAttribute)
-                            {
-                                PrimaryProps.Add(prop);
-                                HasPrimaryKey |= true;
-                            }
 
                             if ((dpa is IForeignKeyPropAttribute || dpa is IPrimaryKeyPropAttribute) && string.IsNullOrEmpty(dpa.DbName))
                                 throw new DbPropAttributeException();
+                            else if (string.IsNullOrEmpty(dpa.DbName))
+                                continue;
+
+                            if (dpa is IForeignKeyPropAttribute)
+                                if (string.IsNullOrEmpty(((IForeignKeyPropAttribute)dpa).ReferenceDbName) || string.IsNullOrEmpty(((IForeignKeyPropAttribute)dpa).ReferenceTable))
+                                    throw new DbPropAttributeException();
+
+                            if (dpa is IPrimaryKeyPropAttribute)
+                            {
+                                dca.PrimaryKey.Add(prop);
+                                HasPrimaryKey |= true;
+                            }
 
                             try { TableStructTmp.Add(dpa.DbName, prop); }
                             catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur DbName de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.DbName}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
@@ -91,7 +83,6 @@ namespace KAutoFactWrapper
                         if (!HasPrimaryKey)
                             throw new DbPropAttributeException($"Le type {t.FullName} n'a pas de clé primaire.");
 
-                        dca.PrimaryKey = new PrimaryKeyStruct(t, PrimaryProps.ToArray());
 
                         this.TableByClass.Add(t, dca.DbName);
 
@@ -111,7 +102,7 @@ namespace KAutoFactWrapper
         {
             foreach(KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in this.TableStructs)
             {
-                Dictionary<PropertyInfo, PropertyInfo> ForeignProps = new Dictionary<PropertyInfo, PropertyInfo>();
+                ForeignKeyStruct FKStruct = (this.ClassByTable[Table.Key].GetCustomAttribute<DbClassAttribute>().ForeignKeys = new ForeignKeyStruct(this.ClassByTable[Table.Key]));
                 foreach (KeyValuePair<string, PropertyInfo> Column in Table.Value)
                 {
                     DbPropAttribute dpa = null;
@@ -119,9 +110,8 @@ namespace KAutoFactWrapper
                         throw new DbAttributeException();
 
                     if (dpa is IForeignKeyPropAttribute)
-                        ForeignProps.Add(Column.Value, this.TableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
+                        FKStruct.Add(Column.Value, this.TableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
                 }
-                this.ClassByTable[Table.Key].GetCustomAttribute<DbClassAttribute>().ForeignKeys = new ForeignKeyStruct(ForeignProps);
             }
         }
 
@@ -297,5 +287,27 @@ namespace KAutoFactWrapper
         }
 
         #endregion
+    }
+}
+public sealed class Singleton
+{
+    private static readonly Singleton instance = new Singleton();
+
+    // Explicit static constructor to tell C# compiler
+    // not to mark type as beforefieldinit
+    static Singleton()
+    {
+    }
+
+    private Singleton()
+    {
+    }
+
+    public static Singleton Instance
+    {
+        get
+        {
+            return instance;
+        }
     }
 }

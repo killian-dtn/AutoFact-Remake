@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace KAutoFactWrapper
 {
-    public class ForeignKeyEnumerator : IEnumerator
+    public class ForeignKeyEnumerator : IEnumerator<KeyValuePair<PropertyInfo, PropertyInfo>>
     {
-        public Dictionary<PropertyInfo, PropertyInfo> ForeignKeys { get; private set; }
+        public ForeignKeyStruct ForeignKeys { get; private set; }
         public KeyValuePair<PropertyInfo, PropertyInfo> Current
         {
             get
@@ -19,16 +19,10 @@ namespace KAutoFactWrapper
                 catch(IndexOutOfRangeException) { throw new InvalidOperationException(); }
             }
         }
-        object IEnumerator.Current
-        {
-            get
-            {
-                return this.Current;
-            }
-        }
+        object IEnumerator.Current { get { return this.Current; } }
         public int Position { get; private set; }
 
-        public ForeignKeyEnumerator(Dictionary<PropertyInfo, PropertyInfo> foreignKeys)
+        public ForeignKeyEnumerator(ForeignKeyStruct foreignKeys)
         {
             this.ForeignKeys = foreignKeys;
             this.Position = -1;
@@ -44,5 +38,7 @@ namespace KAutoFactWrapper
         {
             this.Position = -1;
         }
+
+        void IDisposable.Dispose() { }
     }
 }
