@@ -14,6 +14,12 @@ namespace KAutoFactWrapper
 {
     public class Wrapper
     {
+        private static readonly Wrapper instance = new Wrapper();
+        /// <summary>
+        /// Instance du singleton.
+        /// </summary>
+        public static Wrapper Instance { get { return Wrapper.instance; } }
+
         /// <summary>
         /// Noms des tables (selon les attributs donnés aux Types) classés par Type leur type assigné.
         /// </summary>
@@ -24,20 +30,7 @@ namespace KAutoFactWrapper
         public Dictionary<string, Type> ClassByTable { get; private set; }
         public Dictionary<string, Dictionary<string, PropertyInfo>> TableStructs { get; private set; }
 
-        private static Wrapper instance = null;
-        /// <summary>
-        /// Instance du singleton.
-        /// </summary>
-        public static Wrapper Instance
-        {
-            get
-            {
-                if (Wrapper.instance == null)
-                    Wrapper.instance = new Wrapper();
-                return Wrapper.instance;
-            }
-        }
-
+        static Wrapper() { }
         private Wrapper()
         {
             this.TableByClass = new Dictionary<Type, string>();
@@ -292,5 +285,27 @@ namespace KAutoFactWrapper
         }
 
         #endregion
+    }
+}
+public sealed class Singleton
+{
+    private static readonly Singleton instance = new Singleton();
+
+    // Explicit static constructor to tell C# compiler
+    // not to mark type as beforefieldinit
+    static Singleton()
+    {
+    }
+
+    private Singleton()
+    {
+    }
+
+    public static Singleton Instance
+    {
+        get
+        {
+            return instance;
+        }
     }
 }
