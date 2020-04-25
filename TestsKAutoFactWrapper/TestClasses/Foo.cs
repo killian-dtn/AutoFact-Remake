@@ -9,7 +9,7 @@ using KAutoFactWrapper.Attributes;
 namespace TestsKAutoFactWrapper.TestClasses
 {
     [DbClass("FOO")]
-    class Foo : BaseEntity
+    class Foo : BaseEntity<Foo>
     {
         [DbPrimaryKeyProp("ID")]
         public int Id { get; private set; }
