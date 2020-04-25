@@ -17,7 +17,7 @@ namespace KAutoFactWrapper
 		private MySqlCompiler KataCompiler;
 		private QueryFactory KataFactory;
 
-		private static DbConnection instance = null;
+		private static DbConnection instance = new DbConnection();
 		public static DbConnection Instance
 		{
 			get
@@ -30,6 +30,7 @@ namespace KAutoFactWrapper
 
 		public MySqlConnection Connection { get; private set; }
 
+		static DbConnection() { }
 		private DbConnection()
 		{
 			this.Wrapper_ = Wrapper.Instance;
