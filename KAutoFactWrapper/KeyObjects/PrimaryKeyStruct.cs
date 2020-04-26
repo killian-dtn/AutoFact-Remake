@@ -12,7 +12,7 @@ namespace KAutoFactWrapper
 {
     public class PrimaryKeyStruct : ICollection<PropertyInfo>
     {
-        public List<PropertyInfo> PrimaryKeyProps { get; private set; }
+        internal List<PropertyInfo> PrimaryKeyProps { get; private set; }
         public Type AssociatedType { get; private set; }
         public string[] PrimaryKeyFullNames
         {
@@ -21,9 +21,13 @@ namespace KAutoFactWrapper
                 List<string> res = new List<string>();
                 foreach (PropertyInfo prop in this.PrimaryKeyProps)
                 {
-                    try { res.Add($"{PrimaryKeyStruct.w.TableByClass[prop.ReflectedType]}.{prop.GetCustomAttribute<DbPropAttribute>().DbName}"); }
-                    catch (ArgumentException e) { throw new DbClassAttributeException(e.Message, e); }
-                    catch (NullReferenceException e) { throw new DbPropAttributeException($"La propriété {prop.ReflectedType.FullName}.{prop.Name} ne respecte pas les paramètres nécessaire au Wrapper.", e); }
+                    DbPropAttribute dpa;
+                    if ((dpa = prop.GetCustomAttribute<DbPrimaryKeyPropAttribute>()) != null)
+                        res.Add($"{Wrapper.Instance.TableByClass[prop.ReflectedType]}.{dpa.DbName}");
+                    else if ((dpa = prop.GetCustomAttribute<DbPrimaryForeignKeyPropAttribute>()) != null)
+                        res.Add($"{Wrapper.Instance.TableByClass[prop.ReflectedType]}.{dpa.DbName}");
+                    else
+                        throw new DbAttributeException($"La propriété {prop.ReflectedType.FullName}.{prop.Name} a été indexée dans les clés primaires du Type {AssociatedType.FullName} sans en être une.");
                 }
 
                 return res.ToArray();
@@ -32,8 +36,6 @@ namespace KAutoFactWrapper
         public int Count { get { return this.PrimaryKeyProps.Count; } }
         public bool IsReadOnly { get { return false; } }
         public PropertyInfo this[int index] { get { return this.PrimaryKeyProps[index]; } }
-
-        private static Wrapper w = Wrapper.Instance;
 
         public PrimaryKeyStruct(Type associatedType) : this(associatedType, new PropertyInfo[] { }) { }
         public PrimaryKeyStruct(Type associatedType, params PropertyInfo[] primaryKeyProps)

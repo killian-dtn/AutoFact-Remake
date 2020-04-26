@@ -12,7 +12,7 @@ namespace KAutoFactWrapper
 {
     public class ForeignKeyStruct : ICollection<KeyValuePair<PropertyInfo, PropertyInfo>>
     {
-        public Dictionary<PropertyInfo, PropertyInfo> ForeignKeys { get; private set; }
+        internal Dictionary<PropertyInfo, PropertyInfo> ForeignKeys { get; private set; }
         public Type AssociatedType { get; private set; }
         public PropertyInfo this[PropertyInfo Item]
         {
@@ -43,12 +43,12 @@ namespace KAutoFactWrapper
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator)this.GetEnumerator();
+            return (IEnumerator)((ForeignKeyStruct)this).GetEnumerator();
         }
 
         IEnumerator<KeyValuePair<PropertyInfo, PropertyInfo>> IEnumerable<KeyValuePair<PropertyInfo, PropertyInfo>>.GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<PropertyInfo, PropertyInfo>>)this.GetEnumerator();
+            return (IEnumerator<KeyValuePair<PropertyInfo, PropertyInfo>>)((ForeignKeyStruct)this).GetEnumerator();
         }
 
         public ForeignKeyEnumerator GetEnumerator()

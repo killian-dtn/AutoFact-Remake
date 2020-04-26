@@ -10,28 +10,28 @@ namespace KAutoFactWrapper
 {
     public class ForeignKeyEnumerator : IEnumerator<KeyValuePair<PropertyInfo, PropertyInfo>>
     {
-        public ForeignKeyStruct ForeignKeys { get; private set; }
+        private ForeignKeyStruct FKStruct;
         public KeyValuePair<PropertyInfo, PropertyInfo> Current
         {
             get
             {
-                try { return this.ForeignKeys.ElementAt(this.Position)/*[this.Position]*/; }
+                try { return this.FKStruct.ForeignKeys.ElementAt(this.Position); }
                 catch(IndexOutOfRangeException) { throw new InvalidOperationException(); }
             }
         }
         object IEnumerator.Current { get { return this.Current; } }
         public int Position { get; private set; }
 
-        public ForeignKeyEnumerator(ForeignKeyStruct foreignKeys)
+        public ForeignKeyEnumerator(ForeignKeyStruct Struct)
         {
-            this.ForeignKeys = foreignKeys;
+            this.FKStruct = Struct;
             this.Position = -1;
         }
 
         public bool MoveNext()
         {
             this.Position++;
-            return (this.Position < this.ForeignKeys.Count);
+            return (this.Position < this.FKStruct.Count);
         }
 
         public void Reset()
