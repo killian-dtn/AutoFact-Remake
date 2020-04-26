@@ -64,8 +64,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestClasses\Bar.cs" />
+    <Compile Include="TestClasses\Bar.Generic.cs" />
     <Compile Include="TestClasses\Baz.cs" />
+    <Compile Include="TestClasses\Baz.Generic.cs" />
     <Compile Include="TestClasses\Foo.cs" />
+    <Compile Include="TestClasses\Foo.Generic.cs" />
     <Compile Include="TestWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

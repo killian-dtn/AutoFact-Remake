@@ -218,7 +218,7 @@ namespace KAutoFactWrapper
         /// </summary>
         /// <param name="t">Type à analyser.</param>
         /// <returns>Liste contenant les noms en base de données des parents du Type.</returns>
-        private List<string> GetClassExtendsTree(Type t)
+        public List<string> GetClassExtendsTree(Type t)
         {
             List<string> res = new List<string>();
 
@@ -230,7 +230,7 @@ namespace KAutoFactWrapper
                 return new List<string>();
 
             res.Add(dca.DbExtends);
-            try { return (List<string>)res.Concat(this.GetClassExtendsTree(this.ClassByTable[dca.DbExtends])); }
+            try { return res.Concat(this.GetClassExtendsTree(this.ClassByTable[dca.DbExtends])).ToList<string>(); }
             catch(ArgumentException e) { throw new DbClassAttributeException($"L'assembly ne contient aucune Type avec un attribut {dca.GetType().FullName} ayant DbName à \"{dca.DbExtends}\"", e); }
             catch (DbClassAttributeException) { throw; }
         }
@@ -245,9 +245,7 @@ namespace KAutoFactWrapper
             foreach(string Table in this.GetClassExtendsTree<T>())
             {
                 foreach (KeyValuePair<string, PropertyInfo> kvp in this.TableStructs[Table])
-                {
                     yield return $"{Table}.{kvp.Key}";
-                }
             }
         }
 
