@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using SqlKata.Compilers;
+using SqlKata.Execution;
 using KAutoFactWrapper;
 using KAutoFactWrapper.Attributes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +16,9 @@ namespace TestsKAutoFactWrapper
     public class TestWrapper
     {
         public Wrapper Wrapper_ { get; private set; }
-        
+        public DbConnection DbConnection_ { get; private set; }
+        public QueryFactory KataFactory { get; private set; }
+
         private TestContext testContextInstance;
         public TestContext TestContext
         {
@@ -27,6 +31,8 @@ namespace TestsKAutoFactWrapper
         public TestWrapper()
         {
             this.Wrapper_ = Wrapper.Instance;
+            this.DbConnection_ = DbConnection.Instance;
+            this.KataFactory = new QueryFactory(this.DbConnection_.Connection, new MySqlCompiler());
             this.TestTypes = new Type[] { typeof(Foo), typeof(Bar), typeof(Baz) };
         }
 
@@ -132,6 +138,21 @@ namespace TestsKAutoFactWrapper
             catch (IndexOutOfRangeException e) { Assert.Fail(e.Message); }
             catch (NullReferenceException e) { Assert.Fail(e.Message); }
             catch (Exception) { throw; }
+        }
+
+        [TestMethod]
+        public void TestWrapperGetClassExtendsTree()
+        {
+            Dictionary<Type, List<string>> ExtendsTrees = new Dictionary<Type, List<string>>
+            {
+                { typeof(Foo), new List<string>() },
+                { typeof(Bar), new List<string> { "FOO" } },
+                { typeof(Baz), new List<string> { "BAR", "FOO" } }
+            };
+
+            Assert.AreEqual<List<string>>(new List<string>(), this.Wrapper_.GetClassExtendsTree<Foo>());
+            Assert.AreEqual<List<string>>(new List<string> { "FOO" }, this.Wrapper_.GetClassExtendsTree<Bar>());
+            Assert.AreEqual<List<string>>(new List<string> { "BAR", "FOO" }, this.Wrapper_.GetClassExtendsTree<Baz>());
         }
     }
 }
