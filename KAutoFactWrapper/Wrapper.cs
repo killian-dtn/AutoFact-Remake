@@ -53,7 +53,7 @@ namespace KAutoFactWrapper
                     foreach(Type t in a.GetTypes())
                     {
                         DbClassAttribute dca = null;
-                        if (!Wrapper.IsQueryAble(t, ref dca))
+                        if (!Wrapper.IsQueryAble(t, ref dca) || t.IsGenericType)
                             continue;
 
                         bool HasPrimaryKey = false;
@@ -242,10 +242,24 @@ namespace KAutoFactWrapper
         /// <returns>Liste des noms complet au format base de données suivant : TABLE.PROPRIETE.</returns>
         public IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity<T>
         {
-            foreach(string Table in this.GetClassExtendsTree<T>())
+            /*foreach(string Table in this.GetClassExtendsTree<T>())
             {
                 foreach (KeyValuePair<string, PropertyInfo> kvp in this.TableStructs[Table])
+                {   
                     yield return $"{Table}.{kvp.Key}";
+                }
+            }*/
+            Type t = typeof(T);
+            if (!Wrapper.IsQueryAble(t))
+                throw new DbClassAttributeException($"La classe {t.FullName} ne contient pas d'attribut {typeof(DbClassAttribute).FullName}.");
+
+            foreach (KeyValuePair<string, PropertyInfo> Line in this.TableStructs[this.TableByClass[t]])
+            {
+                yield return $"{Line.Value.DeclaringType.GetCustomAttribute<DbClassAttribute>().DbName}.{Line.Key}";
+                /*if (Line.Value.DeclaringType is T)
+                    yield return $"{this.TableByClass[t]}.{Line.Key}";
+                else
+                    yield return $"{Line.Value.DeclaringType.GetCustomAttribute<DbClassAttribute>().DbExtends}.{Line.Key}";*/
             }
         }
 
