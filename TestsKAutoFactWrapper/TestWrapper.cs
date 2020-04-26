@@ -150,9 +150,13 @@ namespace TestsKAutoFactWrapper
                 { typeof(Baz), new List<string> { "BAR", "FOO" } }
             };
 
-            Assert.AreEqual<List<string>>(new List<string>(), this.Wrapper_.GetClassExtendsTree<Foo>());
-            Assert.AreEqual<List<string>>(new List<string> { "FOO" }, this.Wrapper_.GetClassExtendsTree<Bar>());
-            Assert.AreEqual<List<string>>(new List<string> { "BAR", "FOO" }, this.Wrapper_.GetClassExtendsTree<Baz>());
+            foreach(KeyValuePair<Type, List<string>> Tree in ExtendsTrees)
+            {
+                List<string> TestTree = this.Wrapper_.GetClassExtendsTree(Tree.Key);
+                Assert.AreEqual<int>(Tree.Value.Count, TestTree.Count);
+                foreach (string Table in Tree.Value)
+                    Assert.IsTrue(TestTree.Contains(Table));
+            }
         }
     }
 }
