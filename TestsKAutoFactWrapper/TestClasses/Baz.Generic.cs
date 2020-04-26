@@ -1,4 +1,5 @@
-﻿using KAutoFactWrapper.Attributes;
+﻿using KAutoFactWrapper;
+using KAutoFactWrapper.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,12 +8,9 @@ using System.Threading.Tasks;
 
 namespace TestsKAutoFactWrapper.TestClasses
 {
-    [DbClass("FOO")]
-    public sealed class Foo : Foo<Foo>
+    public class Baz<TChildReference> : Bar<TChildReference> where TChildReference : Baz<TChildReference>
     {
-        [DbPrimaryKeyProp("ID")]
         public new int Id { get; private set; }
-        [DbProp("FOO_ITEM")]
-        public new int FooItem { get; private set; }
+        public int BazItem { get; private set; }
     }
 }

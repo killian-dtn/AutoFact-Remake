@@ -1,5 +1,4 @@
-﻿using KAutoFactWrapper;
-using KAutoFactWrapper.Attributes;
+﻿using KAutoFactWrapper.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +8,11 @@ using System.Threading.Tasks;
 namespace TestsKAutoFactWrapper.TestClasses
 {
     [DbClass("BAZ", "BAR")]
-    class Baz : BaseEntity<Baz>
+    public sealed class Baz : Baz<Baz>
     {
         [DbPrimaryForeignKeyProp("ID", "ID", "BAR")]
-        public int Id { get; private set; }
+        public new int Id { get; private set; }
         [DbProp("BAZ_ITEM")]
-        public int BazItem { get; private set; }
+        public new int BazItem { get; private set; }
     }
 }
