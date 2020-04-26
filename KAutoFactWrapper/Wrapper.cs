@@ -205,14 +205,25 @@ namespace KAutoFactWrapper
         /// <summary>
         /// Obtient l'arbre d'héritage en base de données du Type donné.
         /// </summary>
+        /// <typeparam name="T">Type à analyser.</typeparam>
+        /// <returns>Liste contenant les noms en base de données des parents du Type.</returns>
+        public List<string> GetClassExtendsTree<T>() where T : BaseEntity<T>
+        {
+            try { return this.GetClassExtendsTree(typeof(T)); }
+            catch { throw; }
+        }
+
+        /// <summary>
+        /// Obtient l'arbre d'héritage en base de données du Type donné.
+        /// </summary>
         /// <param name="t">Type à analyser.</param>
         /// <returns>Liste contenant les noms en base de données des parents du Type.</returns>
-        public List<string> GetClassExtendsTree(Type t)
+        private List<string> GetClassExtendsTree(Type t)
         {
             List<string> res = new List<string>();
 
             DbClassAttribute dca = null;
-            if(!Wrapper.IsQueryAble(t, ref dca) || !t.IsSubclassOf(typeof(BaseEntity<>)))
+            if(!Wrapper.IsQueryAble(t, ref dca))
                 throw new DbClassAttributeException();
 
             if (string.IsNullOrEmpty(dca.DbExtends))
@@ -221,6 +232,7 @@ namespace KAutoFactWrapper
             res.Add(dca.DbExtends);
             try { return (List<string>)res.Concat(this.GetClassExtendsTree(this.ClassByTable[dca.DbExtends])); }
             catch(ArgumentException e) { throw new DbClassAttributeException($"L'assembly ne contient aucune Type avec un attribut {dca.GetType().FullName} ayant DbName à \"{dca.DbExtends}\"", e); }
+            catch (DbClassAttributeException) { throw; }
         }
 
         /// <summary>
@@ -230,7 +242,7 @@ namespace KAutoFactWrapper
         /// <returns>Liste des noms complet au format base de données suivant : TABLE.PROPRIETE.</returns>
         public IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity<T>
         {
-            foreach(string Table in this.GetClassExtendsTree(typeof(T)))
+            foreach(string Table in this.GetClassExtendsTree<T>())
             {
                 foreach (KeyValuePair<string, PropertyInfo> kvp in this.TableStructs[Table])
                 {
@@ -252,7 +264,7 @@ namespace KAutoFactWrapper
                 throw new DbClassAttributeException();
 
             // On parcourt toutes les tables parents
-            foreach (string Table in this.GetClassExtendsTree(typeof(T)))
+            foreach (string Table in this.GetClassExtendsTree<T>())
             {
                 DbClassAttribute parent_dca = null;
                 if (!Wrapper.IsQueryAble(this.ClassByTable[Table], ref parent_dca))
