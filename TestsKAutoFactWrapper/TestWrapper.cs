@@ -8,6 +8,7 @@ using KAutoFactWrapper;
 using KAutoFactWrapper.Attributes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestsKAutoFactWrapper.TestClasses;
+using System.Linq;
 
 [assembly: Wrapper]
 namespace TestsKAutoFactWrapper
@@ -156,6 +157,30 @@ namespace TestsKAutoFactWrapper
                 Assert.AreEqual<int>(Tree.Value.Count, TestTree.Count);
                 foreach (string Table in Tree.Value)
                     Assert.IsTrue(TestTree.Contains(Table));
+            }
+        }
+
+        [TestMethod]
+        public void TestWrapperGetFullNameProps()
+        {
+            List<string>[] Props = new List<string>[3]
+            {
+                new List<string> { "FOO.ID", "FOO.FOO_ITEM" },
+                new List<string> { "BAR.ID", "BAR.BAR_ITEM", "FOO.FOO_ITEM" },
+                new List<string> { "BAZ.ID", "BAZ.BAZ_ITEM", "BAR.BAR_ITEM", "FOO.FOO_ITEM" }
+            };
+            List<string>[] Real = new List<string>[3]
+            {
+                this.Wrapper_.GetFullNameProps<Foo>().ToList<string>(),
+                this.Wrapper_.GetFullNameProps<Bar>().ToList<string>(),
+                this.Wrapper_.GetFullNameProps<Baz>().ToList<string>()
+            };
+
+            for (int i = 0; i < 3; i++)
+            {
+                Assert.AreEqual<int>(Props[i].Count, Real[i].Count);
+                foreach (string line in Props[i])
+                    Assert.IsTrue(Real[i].Contains<string>(line));
             }
         }
     }
