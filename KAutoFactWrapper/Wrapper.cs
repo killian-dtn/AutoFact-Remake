@@ -29,6 +29,8 @@ namespace KAutoFactWrapper
         /// </summary>
         public Dictionary<string, Type> ClassByTable { get; private set; }
         public Dictionary<string, Dictionary<string, PropertyInfo>> TableStructs { get; private set; }
+        public Dictionary<string, PrimaryKeyStruct> PrimaryKeysOfTables { get; private set; }
+        public Dictionary<string, ForeignKeyStruct> ForeignKeysOfTables { get; private set; }
 
         static Wrapper() { }
         private Wrapper()
@@ -36,6 +38,8 @@ namespace KAutoFactWrapper
             this.TableByClass = new Dictionary<Type, string>();
             this.ClassByTable = new Dictionary<string, Type>();
             this.TableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
+            this.PrimaryKeysOfTables = new Dictionary<string, PrimaryKeyStruct>();
+            this.ForeignKeysOfTables = new Dictionary<string, ForeignKeyStruct>();
             this.Load();
             this.LoadForeignKeys();
         }
@@ -44,7 +48,7 @@ namespace KAutoFactWrapper
         {
             foreach(Assembly a in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (a.GetCustomAttribute(typeof(WrapperAttribute)) != null)
+                if (a.GetCustomAttribute<WrapperAttribute>() != null)
                 {
                     foreach(Type t in a.GetTypes())
                     {
@@ -53,7 +57,7 @@ namespace KAutoFactWrapper
                             continue;
 
                         bool HasPrimaryKey = false;
-                        dca.PrimaryKey = new PrimaryKeyStruct(t);
+                        this.PrimaryKeysOfTables.Add(dca.DbName, new PrimaryKeyStruct(t));
                         Dictionary<string, PropertyInfo> TableStructTmp = new Dictionary<string, PropertyInfo>();
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
@@ -72,7 +76,7 @@ namespace KAutoFactWrapper
 
                             if (dpa is IPrimaryKeyPropAttribute)
                             {
-                                dca.PrimaryKey.Add(prop);
+                                this.PrimaryKeysOfTables[dca.DbName].Add(prop);
                                 HasPrimaryKey |= true;
                             }
 
@@ -102,7 +106,7 @@ namespace KAutoFactWrapper
         {
             foreach(KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in this.TableStructs)
             {
-                ForeignKeyStruct FKStruct = (this.ClassByTable[Table.Key].GetCustomAttribute<DbClassAttribute>().ForeignKeys = new ForeignKeyStruct(this.ClassByTable[Table.Key]));
+                this.ForeignKeysOfTables.Add(Table.Key, new ForeignKeyStruct(this.ClassByTable[Table.Key]));
                 foreach (KeyValuePair<string, PropertyInfo> Column in Table.Value)
                 {
                     DbPropAttribute dpa = null;
@@ -110,7 +114,7 @@ namespace KAutoFactWrapper
                         throw new DbAttributeException();
 
                     if (dpa is IForeignKeyPropAttribute)
-                        FKStruct.Add(Column.Value, this.TableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
+                        this.ForeignKeysOfTables[Table.Key].Add(Column.Value, this.TableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
                 }
             }
         }
@@ -201,14 +205,25 @@ namespace KAutoFactWrapper
         /// <summary>
         /// Obtient l'arbre d'héritage en base de données du Type donné.
         /// </summary>
+        /// <typeparam name="T">Type à analyser.</typeparam>
+        /// <returns>Liste contenant les noms en base de données des parents du Type.</returns>
+        public List<string> GetClassExtendsTree<T>() where T : BaseEntity<T>
+        {
+            try { return this.GetClassExtendsTree(typeof(T)); }
+            catch { throw; }
+        }
+
+        /// <summary>
+        /// Obtient l'arbre d'héritage en base de données du Type donné.
+        /// </summary>
         /// <param name="t">Type à analyser.</param>
         /// <returns>Liste contenant les noms en base de données des parents du Type.</returns>
-        public List<string> GetClassExtendsTree(Type t)
+        private List<string> GetClassExtendsTree(Type t)
         {
             List<string> res = new List<string>();
 
             DbClassAttribute dca = null;
-            if(!Wrapper.IsQueryAble(t, ref dca) || !t.IsSubclassOf(typeof(BaseEntity<>)))
+            if(!Wrapper.IsQueryAble(t, ref dca))
                 throw new DbClassAttributeException();
 
             if (string.IsNullOrEmpty(dca.DbExtends))
@@ -217,6 +232,7 @@ namespace KAutoFactWrapper
             res.Add(dca.DbExtends);
             try { return (List<string>)res.Concat(this.GetClassExtendsTree(this.ClassByTable[dca.DbExtends])); }
             catch(ArgumentException e) { throw new DbClassAttributeException($"L'assembly ne contient aucune Type avec un attribut {dca.GetType().FullName} ayant DbName à \"{dca.DbExtends}\"", e); }
+            catch (DbClassAttributeException) { throw; }
         }
 
         /// <summary>
@@ -226,7 +242,7 @@ namespace KAutoFactWrapper
         /// <returns>Liste des noms complet au format base de données suivant : TABLE.PROPRIETE.</returns>
         public IEnumerable<string> GetFullNameProps<T>() where T : BaseEntity<T>
         {
-            foreach(string Table in this.GetClassExtendsTree(typeof(T)))
+            foreach(string Table in this.GetClassExtendsTree<T>())
             {
                 foreach (KeyValuePair<string, PropertyInfo> kvp in this.TableStructs[Table])
                 {
@@ -248,7 +264,7 @@ namespace KAutoFactWrapper
                 throw new DbClassAttributeException();
 
             // On parcourt toutes les tables parents
-            foreach (string Table in this.GetClassExtendsTree(typeof(T)))
+            foreach (string Table in this.GetClassExtendsTree<T>())
             {
                 DbClassAttribute parent_dca = null;
                 if (!Wrapper.IsQueryAble(this.ClassByTable[Table], ref parent_dca))
@@ -259,7 +275,7 @@ namespace KAutoFactWrapper
                 {
                     int ReferenceKeyCount = 0;
                     // On parcourt les différentes clés primaires de la table enfant pour trouver celles associées à la table parent
-                    foreach(KeyValuePair<PropertyInfo, PropertyInfo> ChildForeignKey in child_dca.ForeignKeys)
+                    foreach(KeyValuePair<PropertyInfo, PropertyInfo> ChildForeignKey in this.ForeignKeysOfTables[Table])
                     {
                         IForeignKeyPropAttribute dpa = null;
                         if ((dpa = ChildForeignKey.Key.GetCustomAttribute<DbForeignKeyPropAttribute>()) == null)
@@ -287,27 +303,5 @@ namespace KAutoFactWrapper
         }
 
         #endregion
-    }
-}
-public sealed class Singleton
-{
-    private static readonly Singleton instance = new Singleton();
-
-    // Explicit static constructor to tell C# compiler
-    // not to mark type as beforefieldinit
-    static Singleton()
-    {
-    }
-
-    private Singleton()
-    {
-    }
-
-    public static Singleton Instance
-    {
-        get
-        {
-            return instance;
-        }
     }
 }
