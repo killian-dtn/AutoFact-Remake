@@ -50,21 +50,21 @@ namespace KAutoFactWrapper
 			throw new NotImplementedException();
 		}
 
-		public void Insert<T>(BaseEntity<T> Entity) where T : BaseEntity<T>
+		public void Insert<T>(T Entity) where T : BaseEntity<T>
 		{
-			Query q = this.Wrapper_.CreateInsertRequest<T>(this.KataFactory, (T)Entity);
+			Query q = this.Wrapper_.CreateInsertRequest<T>(this.KataFactory, Entity);
 			throw new NotImplementedException();
 		}
 
-		public void Update<T>(BaseEntity<T> Entity) where T : BaseEntity<T>
+		public void Update<T>(T Entity) where T : BaseEntity<T>
 		{
-			Query q = this.Wrapper_.CreateUpdateRequest<T>(this.KataFactory, (T)Entity);
+			Query q = this.Wrapper_.CreateUpdateRequest<T>(this.KataFactory, Entity);
 			throw new NotImplementedException();
 		}
 
-		public void Delete<T>(BaseEntity<T> Entity) where T : BaseEntity<T>
+		public void Delete<T>(T Entity) where T : BaseEntity<T>
 		{
-			Query q = this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, (T)Entity);
+			Query q = this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, Entity);
 			throw new NotImplementedException();
 		}
 	}
