@@ -10,11 +10,14 @@ namespace KAutoFactWrapper.Attributes
     public class DbClassAttribute : DbAttribute
     {
         public string DbExtends { get; private set; }
+        public bool AutoIncrement { get; private set; }
 
-        public DbClassAttribute(string name) : this(name, "") { }
-        public DbClassAttribute(string name, string dbExtends) : base(name)
+        public DbClassAttribute(string name) : this(name, "", false) { }
+        public DbClassAttribute(string name, string dbExtends) : this(name, dbExtends, false) { }
+        public DbClassAttribute(string name, string dbExtends, bool autoIncrement) : base(name)
         {
             this.DbExtends = dbExtends;
+            this.AutoIncrement = autoIncrement;
         }
     }
 }
