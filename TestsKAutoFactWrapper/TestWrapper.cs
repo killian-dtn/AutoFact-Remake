@@ -219,24 +219,5 @@ namespace TestsKAutoFactWrapper
                     Assert.IsTrue(Real[i].Contains<string>(line));
             }
         }
-
-        [TestMethod]
-        public void TestBaseEntityGetDbTableName()
-        {
-            Foo foo = new Foo();
-            Bar bar = new Bar();
-            Baz baz = new Baz();
-            Assert.AreEqual<string>("FOO", foo.GetDbTableName());
-            Assert.AreEqual<string>("BAR", bar.GetDbTableName());
-            Assert.AreEqual<string>("BAZ", baz.GetDbTableName());
-        }
-
-        [TestMethod]
-        public void TestBaseEntityGetDbPropValue()
-        {
-            Bar bar = new Bar();
-            bar.BarItem = 45;
-            Assert.AreEqual<int>(bar.BarItem, (int)bar.GetDbPropValue("BAR_ITEM"));
-        }
     }
 }
