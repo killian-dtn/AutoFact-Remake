@@ -1,6 +1,9 @@
-﻿using System;
+﻿using KAutoFactWrapper.Attributes;
+using KAutoFactWrapper.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +21,25 @@ namespace KAutoFactWrapper
             this.Connection = DbConnection.Instance;
         }
 
+        public string GetDbTableName() { return this.Wrapper_.TableByClass[((TChildReference)this).GetType()]; }
+
+        public object GetDbPropValue(string PropDbName)
+        {
+            PropertyInfo Prop = null;
+
+            try
+            {
+                Prop = this.Wrapper_.TableStructs[((TChildReference)this).GetDbTableName()][PropDbName];
+                return Prop.GetValue(((TChildReference)this));
+            }
+            catch (ArgumentOutOfRangeException e) { throw new DbPropAttributeException(
+                $"La classe {this.GetType().FullName} n'a pas de propriété avec {typeof(DbPropAttribute).FullName}.DbName ayant la valeur \"{PropDbName}\".", e
+            ); }
+            catch (ArgumentException) { throw; }
+        }
+
+        #region Request
+
         public static object SelectAll()
         {
             return DbConnection.Instance.SelectAll<TChildReference>();
@@ -30,17 +52,19 @@ namespace KAutoFactWrapper
 
         public void Insert()
         {
-            this.Connection.Insert<TChildReference>(this);
+            this.Connection.Insert<TChildReference>((TChildReference)this);
         }
 
         public void Update()
         {
-            this.Connection.Update<TChildReference>(this);
+            this.Connection.Update<TChildReference>((TChildReference)this);
         }
 
         public void Delete()
         {
-            this.Connection.Delete<TChildReference>(this);
+            this.Connection.Delete<TChildReference>((TChildReference)this);
         }
+
+        #endregion
     }
 }
