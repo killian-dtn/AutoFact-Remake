@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
@@ -52,7 +53,19 @@ namespace KAutoFactWrapper
 
 		public void Insert<T>(T Entity) where T : BaseEntity<T>
 		{
-			Query q = this.Wrapper_.CreateInsertRequest<T>(this.KataFactory, Entity);
+			string initialTable = this.Wrapper_.TableByClass[Entity.GetType()];
+			List<string> tree = this.Wrapper_.GetClassExtendsTree<T>();
+			Query q = this.Wrapper_.CreateQueryBase<T>(this.KataFactory);
+
+			Dictionary<string, object> queryProps = new Dictionary<string, object>();
+			foreach (KeyValuePair<string, PropertyInfo> kvp in this.Wrapper_.TableStructs[initialTable])
+			{
+				if (Entity.IsAutoIncremented() && this.Wrapper_.PrimaryKeysOfTables[initialTable].Contains(kvp.Value))
+					continue;
+
+				queryProps.Add(kvp.Key, kvp.Value.GetValue(Entity));
+			}
+
 			throw new NotImplementedException();
 		}
 
@@ -64,7 +77,13 @@ namespace KAutoFactWrapper
 
 		public void Delete<T>(T Entity) where T : BaseEntity<T>
 		{
-			Query q = this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, Entity);
+			string initialTable = this.Wrapper_.TableByClass[Entity.GetType()];
+
+			foreach (string Table in this.Wrapper_.GetClassExtendsTree<T>())
+				//this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, ).Delete();
+
+			this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, Entity).Delete();
+
 			throw new NotImplementedException();
 		}
 	}

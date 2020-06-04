@@ -197,7 +197,19 @@ namespace KAutoFactWrapper
 
         public Query CreateDeleteRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity<T>
         {
+            string entityTable = this.TableByClass[Entity.GetType()];
+            Query res = qf.Query(entityTable);
+
+            foreach(PropertyInfo pkProp in this.PrimaryKeysOfTables[entityTable])
+            {
+                DbPropAttribute dpa = null;
+                if (!Wrapper.IsQueryAble(pkProp, ref dpa))
+                    throw new DbPropAttributeException();
+                res = res.Where(dpa.DbName, pkProp.GetValue(Entity));
+            }
+
             throw new NotImplementedException();
+            return res;
         }
 
         #region Query Building
@@ -312,6 +324,11 @@ namespace KAutoFactWrapper
             }
 
             return query;
+        }
+
+        public Query CreateQueryBase<T>(QueryFactory qf)
+        {
+            return qf.Query(this.TableByClass[typeof(T)]);
         }
 
         #endregion
