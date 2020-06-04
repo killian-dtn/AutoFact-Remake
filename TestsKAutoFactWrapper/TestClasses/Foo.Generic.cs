@@ -13,6 +13,6 @@ namespace TestsKAutoFactWrapper.TestClasses
     {
         public int Id { get; private set; }
         [DbProp("FOO_ITEM")]
-        public int FooItem { get; private set; }
+        public int FooItem { get; set; }
     }
 }
