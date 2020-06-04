@@ -29,7 +29,7 @@ namespace KAutoFactWrapper
 
             try
             {
-                Prop = this.Wrapper_.TableStructs[((TChildReference)this).GetDbTableName()][PropDbName];
+                Prop = this.Wrapper_.FullTableStructs[((TChildReference)this).GetDbTableName()][PropDbName];
                 return Prop.GetValue(((TChildReference)this));
             }
             catch (ArgumentOutOfRangeException e) { throw new DbPropAttributeException(

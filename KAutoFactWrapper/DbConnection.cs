@@ -58,7 +58,7 @@ namespace KAutoFactWrapper
 			Query q = this.Wrapper_.CreateQueryBase<T>(this.KataFactory);
 
 			Dictionary<string, object> queryProps = new Dictionary<string, object>();
-			foreach (KeyValuePair<string, PropertyInfo> kvp in this.Wrapper_.TableStructs[initialTable])
+			foreach (KeyValuePair<string, PropertyInfo> kvp in this.Wrapper_.FullTableStructs[initialTable])
 			{
 				if (Entity.IsAutoIncremented() && this.Wrapper_.PrimaryKeysOfTables[initialTable].Contains(kvp.Value))
 					continue;

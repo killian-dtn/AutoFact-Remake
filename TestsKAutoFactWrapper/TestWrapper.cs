@@ -54,7 +54,46 @@ namespace TestsKAutoFactWrapper
         }
 
         [TestMethod]
-        public void TestWrapperTableStructsLoading()
+        public void TestWrapperFullTableStructsLoading()
+        {
+            Dictionary<string, Dictionary<string, PropertyInfo>> ExpectedStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>
+            {
+                {
+                    "FOO", new Dictionary<string, PropertyInfo>
+                    {
+                        { "ID", typeof(Foo).GetProperty("Id") },
+                        { "FOO_ITEM", typeof(Foo).GetProperty("FooItem") }
+                    }
+                },
+                {
+                    "BAR", new Dictionary<string, PropertyInfo>
+                    {
+                        { "ID", typeof(Bar).GetProperty("Id") },
+                        { "FOO_ITEM", typeof(Bar).GetProperty("FooItem") },
+                        { "BAR_ITEM", typeof(Bar).GetProperty("BarItem") }
+                    }
+                },
+                {
+                    "BAZ", new Dictionary<string, PropertyInfo>
+                    {
+                        { "ID", typeof(Baz).GetProperty("Id") },
+                        { "FOO_ITEM", typeof(Baz).GetProperty("FooItem") },
+                        { "BAR_ITEM", typeof(Baz).GetProperty("BarItem") },
+                        { "BAZ_ITEM", typeof(Baz).GetProperty("BazItem") }
+                    }
+                }
+            };
+
+            foreach (KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in ExpectedStructs)
+            {
+                Assert.AreEqual<int>(Table.Value.Count, this.Wrapper_.FullTableStructs[Table.Key].Count);
+                foreach (KeyValuePair<string, PropertyInfo> Line in Table.Value)
+                    Assert.AreEqual<PropertyInfo>(Line.Value, this.Wrapper_.FullTableStructs[Table.Key][Line.Key]);
+            }
+        }
+
+        [TestMethod]
+        public void TestWrapperTrueTableStructsLoading()
         {
             Dictionary<string, Dictionary<string, PropertyInfo>> ExpectedStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>
             {
@@ -81,15 +120,12 @@ namespace TestsKAutoFactWrapper
                 }
             };
 
-            try
+            foreach (KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in ExpectedStructs)
             {
-                foreach (KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in ExpectedStructs)
-                    foreach (KeyValuePair<string, PropertyInfo> Line in Table.Value)
-                        Assert.AreEqual<PropertyInfo>(Line.Value, this.Wrapper_.TableStructs[Table.Key][Line.Key]);
+                Assert.AreEqual<int>(Table.Value.Count, this.Wrapper_.TrueTableStructs[Table.Key].Count);
+                foreach (KeyValuePair<string, PropertyInfo> Line in Table.Value)
+                    Assert.AreEqual<PropertyInfo>(Line.Value, this.Wrapper_.TrueTableStructs[Table.Key][Line.Key]);
             }
-            catch (IndexOutOfRangeException e) { Assert.Fail(e.Message); }
-            catch (NullReferenceException e) { Assert.Fail(e.Message); }
-            catch (Exception) { throw; }
         }
 
         [TestMethod]

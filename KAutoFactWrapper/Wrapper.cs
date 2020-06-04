@@ -28,7 +28,8 @@ namespace KAutoFactWrapper
         /// Types classés par nom des tables donnés dans leur attribut.
         /// </summary>
         public Dictionary<string, Type> ClassByTable { get; private set; }
-        public Dictionary<string, Dictionary<string, PropertyInfo>> TableStructs { get; private set; }
+        public Dictionary<string, Dictionary<string, PropertyInfo>> FullTableStructs { get; private set; }
+        public Dictionary<string, Dictionary<string, PropertyInfo>> TrueTableStructs { get; private set; }
         public Dictionary<string, PrimaryKeyStruct> PrimaryKeysOfTables { get; private set; }
         public Dictionary<string, ForeignKeyStruct> ForeignKeysOfTables { get; private set; }
 
@@ -37,11 +38,13 @@ namespace KAutoFactWrapper
         {
             this.TableByClass = new Dictionary<Type, string>();
             this.ClassByTable = new Dictionary<string, Type>();
-            this.TableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
+            this.FullTableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
+            this.TrueTableStructs = new Dictionary<string, Dictionary<string, PropertyInfo>>();
             this.PrimaryKeysOfTables = new Dictionary<string, PrimaryKeyStruct>();
             this.ForeignKeysOfTables = new Dictionary<string, ForeignKeyStruct>();
             this.Load();
             this.LoadForeignKeys();
+            this.LoadTrueTableStructs();
         }
 
         private void Load()
@@ -58,7 +61,7 @@ namespace KAutoFactWrapper
 
                         bool HasPrimaryKey = false;
                         this.PrimaryKeysOfTables.Add(dca.DbName, new PrimaryKeyStruct(t));
-                        Dictionary<string, PropertyInfo> TableStructTmp = new Dictionary<string, PropertyInfo>();
+                        Dictionary<string, PropertyInfo> FullTableStructTmp = new Dictionary<string, PropertyInfo>();
                         foreach(PropertyInfo prop in t.GetProperties())
                         {
                             DbPropAttribute dpa = null;
@@ -80,7 +83,7 @@ namespace KAutoFactWrapper
                                 HasPrimaryKey |= true;
                             }
 
-                            try { TableStructTmp.Add(dpa.DbName, prop); }
+                            try { FullTableStructTmp.Add(dpa.DbName, prop); }
                             catch(ArgumentException e) { throw new DbPropAttributeException($"La valeur DbName de l'attribut {typeof(DbPropAttribute).FullName} \"{dpa.DbName}\" est utilisée plusieurs fois dans la classe {t.FullName}.", e); }
                         }
 
@@ -93,7 +96,7 @@ namespace KAutoFactWrapper
                         try
                         {
                             this.ClassByTable.Add(dca.DbName, t);
-                            this.TableStructs.Add(dca.DbName, TableStructTmp);
+                            this.FullTableStructs.Add(dca.DbName, FullTableStructTmp);
                         }
                         catch (ArgumentNullException e) { throw new DbClassAttributeException($"La valeur DbName de l'attribut {typeof(DbClassAttribute).FullName} sur le type {t.FullName} est nulle.", e); }
                         catch (ArgumentException e) { throw new DbClassAttributeException($"La valeur DbName de l'attribut {typeof(DbClassAttribute).FullName} \"{dca.DbName}\" est utilisée sur plusieurs classes.", e); }
@@ -104,7 +107,7 @@ namespace KAutoFactWrapper
 
         private void LoadForeignKeys()
         {
-            foreach(KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in this.TableStructs)
+            foreach(KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in this.FullTableStructs)
             {
                 this.ForeignKeysOfTables.Add(Table.Key, new ForeignKeyStruct(this.ClassByTable[Table.Key]));
                 foreach (KeyValuePair<string, PropertyInfo> Column in Table.Value)
@@ -114,8 +117,27 @@ namespace KAutoFactWrapper
                         throw new DbAttributeException();
 
                     if (dpa is IForeignKeyPropAttribute)
-                        this.ForeignKeysOfTables[Table.Key].Add(Column.Value, this.TableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
+                        this.ForeignKeysOfTables[Table.Key].Add(Column.Value, this.FullTableStructs[((IForeignKeyPropAttribute)dpa).ReferenceTable][((IForeignKeyPropAttribute)dpa).ReferenceDbName]);
                 }
+            }
+        }
+
+        private void LoadTrueTableStructs()
+        {
+            foreach(KeyValuePair<string, Dictionary<string, PropertyInfo>> Table in this.FullTableStructs)
+            {
+                Dictionary<string, PropertyInfo> TrueTableStructTmp = new Dictionary<string, PropertyInfo>();
+                foreach (KeyValuePair<string, PropertyInfo> Line in Table.Value)
+                {
+                    DbPropAttribute dpa = null;
+                    if (!Wrapper.IsQueryAble(Line.Value, ref dpa))
+                        continue;
+
+                    if (Line.Value.DeclaringType.GetCustomAttribute<DbClassAttribute>().DbName == Table.Key)
+                        TrueTableStructTmp.Add(dpa.DbName, Line.Value);
+                }
+
+                this.TrueTableStructs.Add(Table.Key, TrueTableStructTmp);
             }
         }
 
@@ -265,7 +287,7 @@ namespace KAutoFactWrapper
             if (!Wrapper.IsQueryAble(t))
                 throw new DbClassAttributeException($"La classe {t.FullName} ne contient pas d'attribut {typeof(DbClassAttribute).FullName}.");
 
-            foreach (KeyValuePair<string, PropertyInfo> Line in this.TableStructs[this.TableByClass[t]])
+            foreach (KeyValuePair<string, PropertyInfo> Line in this.FullTableStructs[this.TableByClass[t]])
             {
                 yield return $"{Line.Value.DeclaringType.GetCustomAttribute<DbClassAttribute>().DbName}.{Line.Key}";
                 /*if (Line.Value.DeclaringType is T)
