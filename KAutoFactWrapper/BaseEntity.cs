@@ -38,6 +38,11 @@ namespace KAutoFactWrapper
             catch (ArgumentException) { throw; }
         }
 
+        public bool IsAutoIncremented()
+        {
+            return ((TChildReference)this).GetType().GetCustomAttribute<DbClassAttribute>().AutoIncrement;
+        }
+
         #region Request
 
         public static object SelectAll()
