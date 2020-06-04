@@ -30,17 +30,17 @@ namespace KAutoFactWrapper
 
         public void Insert()
         {
-            this.Connection.Insert<TChildReference>(this);
+            this.Connection.Insert<TChildReference>((TChildReference)this);
         }
 
         public void Update()
         {
-            this.Connection.Update<TChildReference>(this);
+            this.Connection.Update<TChildReference>((TChildReference)this);
         }
 
         public void Delete()
         {
-            this.Connection.Delete<TChildReference>(this);
+            this.Connection.Delete<TChildReference>((TChildReference)this);
         }
     }
 }
