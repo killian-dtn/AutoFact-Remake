@@ -12,5 +12,7 @@ namespace TestsKAutoFactWrapper.TestClasses
     {
         [DbPrimaryKeyProp("ID")]
         public new int Id { get; private set; }
+
+        public Foo(int id) : base(id) { }
     }
 }

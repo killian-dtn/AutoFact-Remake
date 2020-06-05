@@ -12,5 +12,7 @@ namespace TestsKAutoFactWrapper.TestClasses
     {
         [DbPrimaryForeignKeyProp("ID", "ID", "FOO")]
         public new int Id { get; private set; }
+
+        public Bar(int id) : base(id) { }
     }
 }
