@@ -11,7 +11,7 @@ namespace TestsKAutoFactWrapper.TestClasses
     public sealed class Baz : Baz<Baz>
     {
         [DbPrimaryForeignKeyProp("ID", "ID", "BAR")]
-        public new int Id { get; private set; }
+        public override int Id { get; protected set; }
 
         public Baz(int id) : base(id) { }
     }

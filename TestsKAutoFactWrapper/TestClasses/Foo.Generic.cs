@@ -11,7 +11,7 @@ namespace TestsKAutoFactWrapper.TestClasses
     [DbClass("FOO")]
     public abstract class Foo<TChildReference> : BaseEntity<TChildReference> where TChildReference : Foo<TChildReference>
     {
-        public int Id { get; private set; }
+        public virtual int Id { get; protected set; }
         [DbProp("FOO_ITEM")]
         public int FooItem { get; set; }
 
