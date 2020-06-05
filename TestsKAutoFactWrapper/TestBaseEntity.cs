@@ -21,9 +21,9 @@ namespace TestsKAutoFactWrapper
         [TestMethod]
         public void TestBaseEntityGetDbTableName()
         {
-            Foo foo = new Foo();
-            Bar bar = new Bar();
-            Baz baz = new Baz();
+            Foo foo = new Foo(0);
+            Bar bar = new Bar(0);
+            Baz baz = new Baz(0);
             Assert.AreEqual<string>("FOO", foo.GetDbTableName());
             Assert.AreEqual<string>("BAR", bar.GetDbTableName());
             Assert.AreEqual<string>("BAZ", baz.GetDbTableName());
@@ -32,7 +32,7 @@ namespace TestsKAutoFactWrapper
         [TestMethod]
         public void TestBaseEntityGetDbPropValue()
         {
-            Bar bar = new Bar();
+            Bar bar = new Bar(0);
             bar.BarItem = 45;
             Assert.AreEqual<int>(bar.BarItem, (int)bar.GetDbPropValue("BAR_ITEM"));
         }
