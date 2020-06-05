@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using KAutoFactWrapper.Attributes;
@@ -190,6 +191,26 @@ namespace KAutoFactWrapper
 
         #endregion
 
+        #region GetDbName
+
+        public string GetDbName(PropertyInfo prop)
+        {
+            DbPropAttribute dpa = null;
+            if (Wrapper.IsQueryAble(prop, ref dpa))
+                return dpa.DbName;
+            return null;
+        }
+
+        public string GetDbName(Type type)
+        {
+            DbClassAttribute dca = null;
+            if (Wrapper.IsQueryAble(type, ref dca))
+                return dca.DbName;
+            return null;
+        }
+
+        #endregion
+        
         public Query CreateSelectAllRequest<T>(QueryFactory qf) where T : BaseEntity<T>
         {
             DbClassAttribute dca = null;
@@ -217,21 +238,37 @@ namespace KAutoFactWrapper
             throw new NotImplementedException();
         }
 
-        public Query CreateDeleteRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity<T>
+        public IEnumerable<Query> CreateDeleteRequest<T>(QueryFactory qf, T Entity) where T : BaseEntity<T>
         {
             string entityTable = this.TableByClass[Entity.GetType()];
-            Query res = qf.Query(entityTable);
+            List<string> extendsTree = this.GetClassExtendsTree<T>();
 
-            foreach(PropertyInfo pkProp in this.PrimaryKeysOfTables[entityTable])
+            for (int i = -1; i < extendsTree.Count; i++)
             {
-                DbPropAttribute dpa = null;
-                if (!Wrapper.IsQueryAble(pkProp, ref dpa))
-                    throw new DbPropAttributeException();
-                res = res.Where(dpa.DbName, pkProp.GetValue(Entity));
-            }
+                Query res = null;
+                if (i < 0)
+                {
+                    res = qf.Query(entityTable);
+                    foreach (PropertyInfo pkProp in this.PrimaryKeysOfTables[entityTable])
+                    {
+                        string pkPropDbName = this.GetDbName(pkProp);
+                        if (!string.IsNullOrEmpty(pkPropDbName))
+                            res = res.Where(this.GetDbName(pkProp), Entity.GetDbPropValue(this.GetDbName(pkProp)));
+                    }
+                }
+                else
+                {
+                    res = qf.Query(extendsTree[i]);
+                    foreach (PropertyInfo pkProp in this.PrimaryKeysOfTables[extendsTree[i]])
+                    {
+                        string pkPropDbName = this.GetDbName(pkProp);
+                        if (!string.IsNullOrEmpty(pkPropDbName))
+                            res = res.Where(pkPropDbName, Entity.GetDbPropValue(pkPropDbName));
+                    }
+                }
 
-            throw new NotImplementedException();
-            return res;
+                yield return res.AsDelete();
+            }
         }
 
         #region Query Building

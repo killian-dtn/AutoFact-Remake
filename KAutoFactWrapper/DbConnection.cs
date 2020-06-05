@@ -35,7 +35,7 @@ namespace KAutoFactWrapper
 		private DbConnection()
 		{
 			this.Wrapper_ = Wrapper.Instance;
-			this.Connection = new MySqlConnection();
+			this.Connection = new MySqlConnection(ConnectionString);
 			this.KataCompiler = new MySqlCompiler();
 			this.KataFactory = new QueryFactory(this.Connection, this.KataCompiler);
 		}
@@ -77,14 +77,8 @@ namespace KAutoFactWrapper
 
 		public void Delete<T>(T Entity) where T : BaseEntity<T>
 		{
-			string initialTable = this.Wrapper_.TableByClass[Entity.GetType()];
-
-			foreach (string Table in this.Wrapper_.GetClassExtendsTree<T>())
-				//this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, ).Delete();
-
-			this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, Entity).Delete();
-
-			throw new NotImplementedException();
+			foreach (Query q in this.Wrapper_.CreateDeleteRequest<T>(this.KataFactory, Entity))
+				q.Delete();
 		}
 	}
 }
